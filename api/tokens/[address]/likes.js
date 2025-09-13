@@ -13,19 +13,30 @@ export default async function handler(req, res) {
 
   try {
     const { address } = req.query;
+    console.log('Likes request for address:', address);
+    
+    if (!address) {
+      return res.status(400).json({ success: false, error: 'Address is required' });
+    }
+
     const userIp = req.headers['x-forwarded-for'] || 
                    req.headers['x-real-ip'] || 
                    req.connection?.remoteAddress || 
                    '127.0.0.1';
 
     if (req.method === 'GET') {
+      console.log('Getting likes for address:', address);
+      
       const likeCount = await Like.getLikeCount(address);
       const hasLiked = await Like.hasUserLiked(address, userIp);
+      
+      console.log('Likes data:', { likeCount, hasLiked });
       res.status(200).json({ success: true, data: { likeCount, hasLiked } });
     } else {
       res.status(405).json({ success: false, error: 'Method Not Allowed' });
     }
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    console.error('Error in likes API:', err);
+    res.status(500).json({ success: false, error: err.message, stack: err.stack });
   }
 }
