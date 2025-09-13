@@ -1,8 +1,16 @@
 import pkg from 'pg';
 const { Pool } = pkg;
-import dotenv from 'dotenv';
 
-dotenv.config();
+// Debug environment variables
+console.log('Environment variables:', {
+  DB_URL: process.env.DB_URL ? 'Set' : 'Not set',
+  NODE_ENV: process.env.NODE_ENV,
+  DB_HOST: process.env.DB_HOST,
+  DB_PORT: process.env.DB_PORT,
+  DB_NAME: process.env.DB_NAME,
+  DB_USER: process.env.DB_USER,
+  DB_PASSWORD: process.env.DB_PASSWORD ? 'Set' : 'Not set'
+});
 
 // Support both direct connection and connection string (for Supabase)
 const poolConfig = process.env.DB_URL 
@@ -24,6 +32,12 @@ const poolConfig = process.env.DB_URL
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 2000,
     };
+
+console.log('Pool config:', {
+  hasConnectionString: !!poolConfig.connectionString,
+  hasHost: !!poolConfig.host,
+  ssl: poolConfig.ssl
+});
 
 const pool = new Pool(poolConfig);
 
