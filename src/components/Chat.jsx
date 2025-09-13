@@ -121,6 +121,11 @@ const Chat = ({ isMinimized, onToggleMinimize }) => {
               <div className="chat-error">
                 <i className="fas fa-exclamation-triangle"></i>
                 {error}
+                {error.includes('production') && (
+                  <div style={{ marginTop: '8px', fontSize: '12px', opacity: 0.8 }}>
+                    Chat requires a WebSocket server deployment. Currently only available in development.
+                  </div>
+                )}
               </div>
             )}
             

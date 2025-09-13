@@ -41,8 +41,16 @@ export const useChat = () => {
 
     try {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      // Use port 3000 for WebSocket server (backend)
-      const wsUrl = `${protocol}//localhost:3000`;
+      
+      // Determine WebSocket URL based on environment
+      let wsUrl;
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        // Development: use localhost:3000
+        wsUrl = `${protocol}//localhost:3000`;
+      } else {
+        // Production: use same host as the frontend
+        wsUrl = `${protocol}//${window.location.host}`;
+      }
       
       wsRef.current = new WebSocket(wsUrl);
 
@@ -86,7 +94,8 @@ export const useChat = () => {
 
       wsRef.current.onerror = (error) => {
         console.error('Chat WebSocket error:', error);
-        setError('Connection error. Retrying...');
+        setError('Chat unavailable in production. WebSocket server not deployed.');
+        setIsConnected(false);
       };
 
     } catch (err) {
