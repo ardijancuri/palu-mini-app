@@ -282,7 +282,7 @@ const WaitingRoom = () => {
               
               {/* PALU logo at bottom right */}
               <div className="palu-logo">
-                <img className='palu-logo' src="/assets/PALU.webp" alt="PALU" />
+                <img className='palu-logo' src="/assets/palu-moon.png" alt="PALU" />
               </div>
               
               {/* Live Chat */}

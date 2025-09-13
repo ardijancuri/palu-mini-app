@@ -12,7 +12,9 @@ const Header = () => {
   return (
     <header className="app-header">
       <div className="header-content">
-        <h1>PALU</h1>
+        <div className="logo-container">
+          <img src="/assets/palu-logo.png" alt="PALU" className="header-logo" />
+        </div>
         <div className="nav-container">
           <nav className="main-nav">
             <Link 
@@ -27,12 +29,12 @@ const Header = () => {
             >
               Dashboard
             </Link>
-            <div className="nav-item-container">
-              <span className="nav-link disabled">
-                Community
-              </span>
-              <span className="coming-soon-text">Coming Soon</span>
-            </div>
+            <span 
+              className="nav-link disabled" 
+              title="Coming Soon"
+            >
+              Community
+            </span>
           </nav>
         </div>
         <div className="mobile-menu">
@@ -54,12 +56,12 @@ const Header = () => {
             >
               Dashboard
             </Link>
-            <div className="nav-item-container">
-              <span className="nav-link disabled">
-                Community
-              </span>
-              <span className="coming-soon-text">Coming Soon</span>
-            </div>
+            <span 
+              className="nav-link disabled" 
+              title="Coming Soon"
+            >
+              Community
+            </span>
           </nav>
         </div>
       </div>

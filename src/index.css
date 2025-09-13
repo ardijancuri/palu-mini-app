@@ -54,11 +54,19 @@ body {
   position: relative;
 }
 
-.app-header h1 {
-  font-size: 18px;
-  margin: 0;
+.logo-container {
   position: absolute;
   left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+}
+
+.header-logo {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
 }
 
 .nav-container {
@@ -68,7 +76,10 @@ body {
 }
 
 .mobile-menu {
-  position: relative;
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
   display: none;
 }
 
@@ -128,20 +139,50 @@ body {
   border-color: transparent;
 }
 
-.nav-item-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
+/* Custom tooltip styling for disabled nav links */
+.nav-link.disabled[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: #F5C908;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  z-index: 10000;
+  border: 1px solid rgba(245, 201, 8, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: tooltipFadeIn 0.2s ease-out;
+  pointer-events: none;
 }
 
-.coming-soon-text {
-  font-size: 10px;
-  color: #F5C908;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+.nav-link.disabled[title]:hover::before {
+  content: '';
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-bottom-color: rgba(245, 201, 8, 0.3);
+  z-index: 10000;
+  pointer-events: none;
 }
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
 .env-badge {
   font-size: 12px;
   color: var(--muted);
@@ -896,7 +937,37 @@ main {
 }
 
 @media (max-width: 768px) {
-
+  .app-header {
+    height: 60px;
+  }
+  
+  .header-content {
+    height: 60px;
+  }
+  
+  .logo-container {
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  .mobile-menu {
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  /* Fix mobile viewport issues */
+  .waiting-room {
+    height: calc(100vh - 80px);
+    min-height: calc(100vh - 80px);
+  }
+  
+  .palu-logo {
+    bottom: 20px;
+  }
+  
+  .live-chat {
+    bottom: 20px;
+  }
   
   .loading-indicator,
   .error-indicator {
@@ -942,7 +1013,7 @@ main {
   .live-chat {
     width: 280px;
     height: 320px;
-    bottom: 10px;
+    bottom: 20px;
     left: 10px;
   }
   
