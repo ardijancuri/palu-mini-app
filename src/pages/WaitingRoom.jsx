@@ -132,10 +132,14 @@ const WaitingRoom = () => {
       // Create a canvas with the background image and price overlay
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      const size = 420;
+      const size = 1080; // High resolution for better quality
       
       canvas.width = size;
       canvas.height = size;
+      
+      // Enable high-quality rendering
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
       
       // Randomly choose between palu-price-1.png and palu-price-2.png (50% chance each)
       const randomImage = Math.random() < 0.5 ? 'palu-price-1.png' : 'palu-price-2.png';
@@ -160,15 +164,15 @@ const WaitingRoom = () => {
             const x = size / 2; // Horizontally centered
             const y = size * 0.3; // 30% from top
             
-            // Set font size based on canvas size
-            const fontSize = Math.floor(size * 0.15); // 15% of canvas size
-            ctx.font = `600 ${fontSize}px Oswald, sans-serif`;
+                    // Set font size based on canvas size
+                    const fontSize = Math.floor(size * 0.12); // 12% of canvas size for better proportion
+                    ctx.font = `600 ${fontSize}px Oswald, sans-serif`;
             
             // Add text shadow for better visibility
             ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-            ctx.shadowBlur = 10;
-            ctx.shadowOffsetX = 2;
-            ctx.shadowOffsetY = 2;
+            ctx.shadowBlur = 20; // Increased for higher resolution
+            ctx.shadowOffsetX = 4;
+            ctx.shadowOffsetY = 4;
             
             // Draw the price text
             const priceText = `BNB $${formatPrice(bnbPrice)}`;
@@ -180,8 +184,8 @@ const WaitingRoom = () => {
             ctx.shadowOffsetX = 0;
             ctx.shadowOffsetY = 0;
             
-            console.log('Screenshot created successfully with background:', randomImage);
-            resolve(canvas.toDataURL('image/png'));
+                    console.log('Screenshot created successfully with background:', randomImage);
+                    resolve(canvas.toDataURL('image/png', 1.0)); // Maximum quality
           } catch (error) {
             console.error('Error creating screenshot:', error);
             reject(error);
