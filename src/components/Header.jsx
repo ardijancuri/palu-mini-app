@@ -29,12 +29,14 @@ const Header = () => {
             >
               Dashboard
             </Link>
-            <span 
-              className="nav-link disabled" 
-              title="Coming Soon"
-            >
-              Community
-            </span>
+            <div className="nav-item-with-label">
+              <span 
+                className="nav-link disabled"
+              >
+                Community
+              </span>
+              <span className="coming-soon-label">Coming Soon</span>
+            </div>
           </nav>
         </div>
         <div className="mobile-menu">
@@ -56,12 +58,14 @@ const Header = () => {
             >
               Dashboard
             </Link>
-            <span 
-              className="nav-link disabled" 
-              title="Coming Soon"
-            >
-              Community
-            </span>
+            <div className="nav-item-with-label">
+              <span 
+                className="nav-link disabled"
+              >
+                Community
+              </span>
+              <span className="coming-soon-label">Coming Soon</span>
+            </div>
           </nav>
         </div>
       </div>

@@ -139,6 +139,50 @@ body {
   border-color: transparent;
 }
 
+/* Nav item with label container */
+.nav-item-with-label {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Coming soon label that appears on hover */
+.coming-soon-label {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: var(--accent);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  z-index: 1000;
+  border: 1px solid rgba(245, 201, 8, 0.3);
+}
+
+/* Show coming soon label on hover */
+.nav-item-with-label:hover .coming-soon-label {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Arrow pointing up to the nav link */
+.coming-soon-label::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-bottom-color: rgba(0, 0, 0, 0.9);
+}
+
 /* Custom tooltip styling for disabled nav links */
 .nav-link.disabled[title]:hover::after {
   content: attr(title);
@@ -506,7 +550,7 @@ main {
   text-shadow: 0 0 30px rgba(245, 201, 8, 0.3);
   margin: 0;
   letter-spacing: -0.02em;
-  line-height: 0.9;
+  line-height: 1.1;
   animation: titleGlow 3s ease-in-out infinite alternate;
   z-index: 10;
   position: relative;

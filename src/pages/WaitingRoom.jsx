@@ -224,39 +224,70 @@ const WaitingRoom = () => {
       const response = await fetch(screenshot);
       const blob = await response.blob();
       
-      // Copy image to clipboard
-      try {
-        await navigator.clipboard.write([
-          new ClipboardItem({
-            'image/png': blob
-          })
-        ]);
-        
-        // Create Twitter share URL with text
-        const text = `BNB is at $${formatPrice(bnbPrice)}! 🚀\nWaiting for $1000! 🚀\n\n#BNB #Binance #Crypto #ToTheMoon #X`;
-        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-        
-        // Show success message and open Twitter
-        alert('📸 Screenshot copied to clipboard!\n\nOpening X/Twitter...\n\nJust paste (Ctrl+V) to add the image to your tweet!');
-        
-        // Open Twitter/X in new tab
-        window.open(twitterUrl, '_blank');
-        
-      } catch (clipboardError) {
-        console.error('Clipboard copy failed:', clipboardError);
-        
-        // Fallback: download the image if clipboard fails
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `bnb-${formatPrice(bnbPrice)}-${Date.now()}.png`;
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        
-        alert('📸 Screenshot downloaded!\n\nClipboard access denied. Image has been downloaded instead.');
+      // Check if mobile device
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      if (isMobile) {
+        // Mobile approach: Use Twitter's native sharing with image
+        try {
+          // Create a temporary link to download the image
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `bnb-${formatPrice(bnbPrice)}-${Date.now()}.png`;
+          
+          // Trigger download
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+          
+          // Open Twitter with text and let user attach the downloaded image
+          const text = `BNB is at $${formatPrice(bnbPrice)}! 🚀\nWaiting for $1000! 🚀\n\n#BNB #Binance #Crypto #ToTheMoon #X`;
+          const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+          
+          alert('📸 Screenshot downloaded!\n\nOpening X/Twitter...\n\nAttach the downloaded image to your tweet!');
+          window.open(twitterUrl, '_blank');
+          
+        } catch (mobileError) {
+          console.error('Mobile share failed:', mobileError);
+          alert('Mobile sharing failed. Please try again.');
+        }
+      } else {
+        // Desktop approach: Copy to clipboard
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({
+              'image/png': blob
+            })
+          ]);
+          
+          // Create Twitter share URL with text
+          const text = `BNB is at $${formatPrice(bnbPrice)}! 🚀\nWaiting for $1000! 🚀\n\n#BNB #Binance #Crypto #ToTheMoon #X`;
+          const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+          
+          // Show success message and open Twitter
+          alert('📸 Screenshot copied to clipboard!\n\nOpening X/Twitter...\n\nJust paste (Ctrl+V) to add the image to your tweet!');
+          
+          // Open Twitter/X in new tab
+          window.open(twitterUrl, '_blank');
+          
+        } catch (clipboardError) {
+          console.error('Clipboard copy failed:', clipboardError);
+          
+          // Fallback: download the image if clipboard fails
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `bnb-${formatPrice(bnbPrice)}-${Date.now()}.png`;
+          
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+          
+          alert('📸 Screenshot downloaded!\n\nClipboard access denied. Image has been downloaded instead.');
+        }
       }
       
     } catch (error) {
