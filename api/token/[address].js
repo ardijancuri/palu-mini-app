@@ -24,10 +24,22 @@ export default async function handler(req, res) {
 
   try {
     const response = await fetch(target);
+    
+    if (!response.ok) {
+      console.error(`API Error for ${address}: ${response.status} ${response.statusText}`);
+      return res.status(response.status).json({ 
+        error: 'External API error', 
+        status: response.status,
+        statusText: response.statusText 
+      });
+    }
+    
     const data = await response.json();
+    console.log(`API Success for ${address}:`, data);
     
     res.status(response.status).json(data);
   } catch (err) {
+    console.error(`API Error for ${address}:`, err);
     res.status(502).json({ error: 'Upstream error', detail: err.message });
   }
 }
