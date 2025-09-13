@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import Chat from '../components/Chat';
 
 const WaitingRoom = () => {
   const [bnbPrice, setBnbPrice] = useState(null);
@@ -317,46 +318,10 @@ const WaitingRoom = () => {
               </div>
               
               {/* Live Chat */}
-              <div className={`live-chat ${isChatMinimized ? 'minimized' : ''}`}>
-                <div className="chat-header" onClick={() => setIsChatMinimized(!isChatMinimized)}>
-                  <div className="chat-title">
-                    <i className="fas fa-comments"></i>
-                    Live Chat
-                  </div>
-                  <div className="chat-header-right">
-                    <button 
-                      className="minimize-chat-button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsChatMinimized(!isChatMinimized);
-                      }}
-                    >
-                      <i className={`fas ${isChatMinimized ? 'fa-plus' : 'fa-minus'}`}></i>
-                    </button>
-                  </div>
-                </div>
-                {!isChatMinimized && (
-                  <>
-                    <div className="chat-messages">
-                      <div className="coming-soon-message">
-                        <div className="coming-soon-icon">
-                          <i className="fas fa-rocket"></i>
-                        </div>
-                        <div className="coming-soon-text">
-                          <h3>Live Chat Coming Soon!</h3>
-                          <p>We're working hard to bring you real-time community chat. Stay tuned!</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="chat-input disabled">
-                      <input type="text" placeholder="Chat will be available soon..." disabled />
-                      <button className="send-button" disabled>
-                        <i className="fas fa-paper-plane"></i>
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
+              <Chat 
+                isMinimized={isChatMinimized}
+                onToggleMinimize={() => setIsChatMinimized(!isChatMinimized)}
+              />
               
               <div className="waiting-room-content">
         <h1 className="waiting-room-title">BNB ${formatPrice(bnbPrice)}</h1>

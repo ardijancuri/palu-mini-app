@@ -7,6 +7,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import { WebSocketServer } from 'ws';
 
 // ES module setup
 const __filename = fileURLToPath(import.meta.url);
@@ -228,6 +229,119 @@ const server = http.createServer(async (req, res) => {
   serveFile(req, res);
 });
 
+// Create WebSocket server
+const wss = new WebSocketServer({ server });
+
+// Store connected clients
+const clients = new Set();
+
+// WebSocket connection handling
+wss.on('connection', (ws, req) => {
+  console.log('New WebSocket connection');
+  clients.add(ws);
+
+  // Send recent messages to new client
+  const sendRecentMessages = async () => {
+    try {
+      const { default: ChatMessage } = await import('./models/ChatMessage.js');
+      const messages = await ChatMessage.getRecent(20);
+      ws.send(JSON.stringify({
+        type: 'recent_messages',
+        messages: messages
+      }));
+    } catch (error) {
+      console.error('Database not available, starting with empty chat:', error.message);
+      // Send empty messages if database is not available
+      ws.send(JSON.stringify({
+        type: 'recent_messages',
+        messages: []
+      }));
+    }
+  };
+
+  sendRecentMessages();
+
+  ws.on('message', async (data) => {
+    try {
+      const message = JSON.parse(data.toString());
+      
+      if (message.type === 'chat_message') {
+        const { username, message: messageText } = message;
+        
+        if (!username || !messageText || username.trim() === '' || messageText.trim() === '') {
+          ws.send(JSON.stringify({
+            type: 'error',
+            message: 'Username and message are required'
+          }));
+          return;
+        }
+
+        // Limit message length
+        if (messageText.length > 500) {
+          ws.send(JSON.stringify({
+            type: 'error',
+            message: 'Message too long (max 500 characters)'
+          }));
+          return;
+        }
+
+        // Get client IP
+        const userIp = getClientIP(req);
+        
+        // Try to save message to database, fallback to in-memory if database unavailable
+        let savedMessage;
+        try {
+          const { default: ChatMessage } = await import('./models/ChatMessage.js');
+          savedMessage = await ChatMessage.create(username.trim(), messageText.trim(), userIp);
+        } catch (error) {
+          console.log('Database not available, using in-memory storage:', error.message);
+          // Create a temporary message object for in-memory storage
+          savedMessage = {
+            id: Date.now() + Math.random(), // Temporary ID
+            username: username.trim(),
+            message: messageText.trim(),
+            created_at: new Date().toISOString()
+          };
+        }
+        
+        // Broadcast to all connected clients
+        const broadcastMessage = {
+          type: 'new_message',
+          message: {
+            id: savedMessage.id,
+            username: savedMessage.username,
+            message: savedMessage.message,
+            created_at: savedMessage.created_at
+          }
+        };
+
+        clients.forEach(client => {
+          if (client.readyState === client.OPEN) {
+            client.send(JSON.stringify(broadcastMessage));
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error handling WebSocket message:', error);
+      ws.send(JSON.stringify({
+        type: 'error',
+        message: 'Invalid message format'
+      }));
+    }
+  });
+
+  ws.on('close', () => {
+    console.log('WebSocket connection closed');
+    clients.delete(ws);
+  });
+
+  ws.on('error', (error) => {
+    console.error('WebSocket error:', error);
+    clients.delete(ws);
+  });
+});
+
 server.listen(PORT, () => {
   console.log(`Mini App server running at http://localhost:${PORT}`);
+  console.log(`WebSocket server running on ws://localhost:${PORT}`);
 });

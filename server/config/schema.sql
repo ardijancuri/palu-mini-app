@@ -2,6 +2,7 @@
 -- Simplified schema: only token addresses and like counts
 
 -- Drop existing tables if they exist
+DROP TABLE IF EXISTS chat_messages CASCADE;
 DROP TABLE IF EXISTS likes CASCADE;
 DROP TABLE IF EXISTS tokens CASCADE;
 
@@ -50,3 +51,15 @@ CREATE TRIGGER update_like_count_delete
     AFTER DELETE ON likes
     FOR EACH ROW
     EXECUTE FUNCTION update_like_count();
+
+-- Create chat_messages table
+CREATE TABLE chat_messages (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) NOT NULL,
+    message TEXT NOT NULL,
+    user_ip VARCHAR(45),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create index for better performance
+CREATE INDEX idx_chat_messages_created_at ON chat_messages(created_at);
