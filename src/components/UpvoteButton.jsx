@@ -14,7 +14,7 @@ const UpvoteButton = ({ address, count, isUpvoted, onUpvote, isMobile = false, i
     >
       <span className="upvote-count">{count}</span>
       {isLoading ? (
-        <i className="fas fa-spinner fa-spin upvote-icon"></i>
+        <i className="fas fa-heart upvote-icon loading-heart"></i>
       ) : (
         <i className={`${isUpvoted ? 'fas' : 'far'} fa-heart upvote-icon`}></i>
       )}

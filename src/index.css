@@ -492,6 +492,15 @@ main {
   color: var(--accent);
 }
 
+.token-metrics .upvote-container.loading .loading-heart {
+  color: #fbbf24;
+  animation: heartZoom 0.6s ease-out;
+}
+
+.token-metrics .upvote-container.loading .loading-heart:before {
+  font-weight: 900;
+}
+
 .token-metrics .upvote-container.disabled {
   pointer-events: none;
   cursor: not-allowed;
@@ -857,6 +866,15 @@ main {
 
   .upvote-container.loading .upvote-icon {
     color: var(--accent);
+  }
+
+  .upvote-container.loading .loading-heart {
+    color: #fbbf24;
+    animation: heartZoom 0.6s ease-out;
+  }
+
+  .upvote-container.loading .loading-heart:before {
+    font-weight: 900;
   }
 
   .upvote-container.disabled {
