@@ -27,12 +27,12 @@ const Header = () => {
             >
               Dashboard
             </Link>
-            <Link 
-              to="/community" 
-              className={`nav-link ${location.pathname === '/community' ? 'active' : ''}`}
-            >
-              Community
-            </Link>
+            <div className="nav-item-container">
+              <span className="nav-link disabled">
+                Community
+              </span>
+              <span className="coming-soon-text">Coming Soon</span>
+            </div>
           </nav>
         </div>
         <div className="mobile-menu">
@@ -54,13 +54,12 @@ const Header = () => {
             >
               Dashboard
             </Link>
-            <Link 
-              to="/community" 
-              className={`nav-link ${location.pathname === '/community' ? 'active' : ''}`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Community
-            </Link>
+            <div className="nav-item-container">
+              <span className="nav-link disabled">
+                Community
+              </span>
+              <span className="coming-soon-text">Coming Soon</span>
+            </div>
           </nav>
         </div>
       </div>
