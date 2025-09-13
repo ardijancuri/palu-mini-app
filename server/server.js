@@ -12,11 +12,17 @@ import dotenv from 'dotenv';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config();
+// Load environment variables from the project root
+const envPath = path.join(__dirname, '..', '.env');
+console.log('Loading .env from:', envPath);
+console.log('File exists:', fs.existsSync(envPath));
 
-// Import database models
-import Token from './models/Token.js';
-import Like from './models/Like.js';
+const result = dotenv.config({ path: envPath });
+if (result.error) {
+  console.error('Error loading .env:', result.error);
+} else {
+  console.log('Environment variables loaded successfully');
+}
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
@@ -93,6 +99,10 @@ function serveFile(req, res) {
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   console.log(`Request: ${req.method} ${url.pathname}`); // Debug log
+  
+  // Dynamically import models to ensure environment variables are loaded
+  const { default: Token } = await import('./models/Token.js');
+  const { default: Like } = await import('./models/Like.js');
   
   // Handle Database API routes
   if (url.pathname === '/api/tokens') {

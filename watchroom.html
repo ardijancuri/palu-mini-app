@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<!-- Bebas Neue for headline/odometer -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+<title>BNB — Live $ Watcher</title>
+<style>
+  :root { --spd: .28s; --gap: .04em; }
+  html,body { height: 100%; }
+  body {
+    margin: 0; display: grid; place-items: center; background: #0b0b0c; color: #ffd54a;
+    font-family: ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,"Noto Sans",sans-serif;
+  }
+  /* Headline */
+  #ticker {
+    display: flex; align-items: baseline; gap: .15em;
+    font-family: 'Bebas Neue', ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,"Noto Sans",sans-serif;
+    font-weight: 400; line-height: 1;
+    /* Scales smoothly from phones to desktops */
+    font-size: clamp(28px, 12vw, 140px);
+    letter-spacing: .01em;
+  }
+  .label { opacity: .95; }
+  .currency { margin-left: .1em; }
+  /* Odometer (each digit = 1 column with a vertical strip of 0–9) */
+  .odometer { display: flex; gap: var(--gap); }
+  .digit {
+    position: relative; width: .6em; height: 1em; overflow: hidden;
+  }
+  .strip {
+    position: absolute; left: 0; right: 0; top: 0;
+    will-change: transform;
+    transition: transform var(--spd) cubic-bezier(.19,.75,.22,1);
+  }
+  .strip div {
+    height: 1em; line-height: 1em; text-align: center;
+  }
+  /* Accessibility: reduce motion if the user prefers */
+  @media (prefers-reduced-motion: reduce) {
+    .strip { transition: none !important; }
+  }
+
+  /* Meta row */
+  #meta {
+    position: fixed; inset: auto 12px 12px 12px; color: #9aa0a6; font: 13px/1.4 system-ui, sans-serif;
+  }
+  #meta b { color: #e8eaed; }
+</style>
+</head>
+<body>
+  <div id="ticker" aria-live="polite" aria-atomic="true">
+    <span class="label">BNB</span>
+    <span class="currency">$</span>
+    <div id="odometer" class="odometer" role="text" aria-label="BNB price in USD"></div><span id="dec" class="decimals">.00</span>
+  </div>
+
+  <div id="meta">
+    Source: <b>Binance</b> (BNB/USDT, approx. USD) •
+    Last update: <span id="ts">—</span>
+  </div>
+
+<script>
+(() => {
+  // ------------------------------
+  // ODOMETER (per-$1 rotary effect)
+  // ------------------------------
+  const odo = document.getElementById('odometer');
+  const dec = document.getElementById('dec');
+  const ts = document.getElementById('ts');
+
+  /** Create enough digit columns for a given integer (e.g., 942 -> 3 columns) */
+  function ensureWheelsFor(intVal) {
+    const needed = String(Math.max(0, intVal)).length;
+    const have = odo.children.length;
+    // Add missing columns on the left to avoid shift
+    for (let i = have; i < needed; i++) odo.prepend(makeDigit());
+    // Remove extras if price shrinks in digits (e.g., 1000 -> 999)
+    for (let i = odo.children.length; i > needed; i--) odo.removeChild(odo.firstElementChild);
+  }
+
+  /** Build a digit column: 0-9 twice for seamless wrap (…8,9,0,1…) */
+  function makeDigit() {
+    const col = document.createElement('div');
+    col.className = 'digit';
+    const strip = document.createElement('div');
+    strip.className = 'strip';
+    // Two cycles: 0..9 0..9
+    for (let k = 0; k < 20; k++) {
+      const d = document.createElement('div');
+      d.textContent = k % 10;
+      strip.appendChild(d);
+    }
+    // Store state on element
+    strip._index = 0; // which row we’re showing (0..19)
+    col.appendChild(strip);
+    return col;
+  }
+
+  /** Move a single digit column to a target 0-9 in a chosen direction ("up" price↑ or "down" price↓) */
+  function setDigit(col, value, direction) {
+    const strip = col.firstElementChild;
+    const height = col.clientHeight || col.getBoundingClientRect().height;
+    const current = strip._index || 0;
+
+    // Compute the next index that shows `value` while honoring direction.
+    // We duplicated 0-9, so we can always move forward/backward smoothly.
+    let target;
+    if (direction === 'up') {
+      // Find next >= current+1 with (idx % 10) == value
+      const next = ((Math.floor((current + 1) / 10) * 10) + value);
+      target = next <= current ? next + 10 : next;
+    } else {
+      // Find prev <= current-1 with (idx % 10) == value
+      const prev = ((Math.floor((current - 1) / 10) * 10) + value);
+      target = prev >= current ? prev - 10 : prev;
+    }
+
+    strip._index = target;
+    strip.style.transform = `translateY(${-target * height}px)`;
+  }
+
+  /** Render an integer into the odometer with per-$1 roll in a direction */
+  function renderInt(intVal, direction) {
+    ensureWheelsFor(intVal);
+    const s = String(Math.max(0, intVal));
+    // Right-align digits to columns (we prepended new columns)
+    const cols = Array.from(odo.children);
+    const start = cols.length - s.length;
+    for (let i = 0; i < cols.length; i++) {
+      const col = cols[i];
+      const char = s[i - start] ?? '0';
+      setDigit(col, Number(char), direction);
+    }
+  }
+
+  // ------------------------------
+  // STREAM + STEP ANIMATION
+  // ------------------------------
+  const state = {
+    currentInt: null,
+    queuedTarget: null,
+    animating: false,
+    stepMs: 85,      // speed per $1 tick
+    maxSteps: 150    // safety for huge jumps
+  };
+
+  function queueTo(target) {
+    if (state.animating) {
+      state.queuedTarget = target; // coalesce to the latest
+    } else {
+      animateTo(target);
+    }
+  }
+
+  function animateTo(target) {
+    if (state.currentInt == null) {
+      // First paint: place instantly (no motion)
+      ensureWheelsFor(target);
+      // Set all digits without a directional animation
+      const cols = Array.from(odo.children);
+      const s = String(target);
+      const start = cols.length - s.length;
+      for (let i = 0; i < cols.length; i++) {
+        const strip = cols[i].firstElementChild;
+        const v = Number(s[i - start] ?? '0');
+        strip._index = v; // top cycle
+        strip.style.transform = `translateY(${-v * (cols[i].clientHeight || cols[i].getBoundingClientRect().height)}px)`;
+      }
+      state.currentInt = target;
+      ts.textContent = new Date().toLocaleTimeString();
+      return;
+    }
+
+    const dir = target > state.currentInt ? 'up' : 'down';
+    const total = Math.min(state.maxSteps, Math.abs(target - state.currentInt));
+    if (!total) return;
+    state.animating = true;
+    let i = state.currentInt + (dir === 'up' ? 1 : -1);
+    let steps = 0;
+
+    const tick = () => {
+      renderInt(i, dir);
+      state.currentInt = i;
+      ts.textContent = new Date().toLocaleTimeString();
+      steps++;
+      if (i === target || steps >= total) {
+        state.animating = false;
+        if (state.queuedTarget != null) {
+          const q = state.queuedTarget;
+          state.queuedTarget = null;
+          // Jump again toward the latest queued target
+          requestAnimationFrame(() => animateTo(q));
+        }
+        return;
+      }
+      i += dir === 'up' ? 1 : -1;
+      setTimeout(tick, state.stepMs);
+    };
+    tick();
+  }
+
+  // ------------------------------
+  // LIVE PRICE (Binance) + fallback
+  // ------------------------------
+  const PAIR = (new URL(location.href)).searchParams.get('pair') || 'BNBUSDT';
+  let ws, pollTimer;
+
+  function connectWS() {
+    cleanup();
+    ws = new WebSocket(`wss://stream.binance.com:9443/ws/${PAIR.toLowerCase()}@miniTicker`);
+    ws.onmessage = (e) => {
+      const d = JSON.parse(e.data);
+      const p = parseFloat(d.c);                // last price
+      const dollars = Math.round(p);            // animate integer dollars
+      const cents = (Math.round(p * 100) % 100).toString().padStart(2, '0');
+      if (dec) dec.textContent = `.${cents}`;   // show two decimals
+      queueTo(dollars);
+    };
+    ws.onclose = scheduleFallback;
+    ws.onerror = scheduleFallback;
+  }
+
+  function scheduleFallback() {
+    try { ws && ws.close(); } catch {}
+    ws = null;
+    if (!pollTimer) {
+      // Poll REST every 5s as a fallback
+      pollTimer = setInterval(async () => {
+        try {
+          const r = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${PAIR}`);
+          const j = await r.json();
+          const p = parseFloat(j.price);
+          const dollars = Math.round(p);
+          const cents = (Math.round(p * 100) % 100).toString().padStart(2, '0');
+          if (dec) dec.textContent = `.${cents}`;
+          queueTo(dollars);
+        } catch (_) { /* ignore */ }
+      }, 5000);
+    }
+    // Try to reconnect WS in the background
+    setTimeout(connectWS, 10_000);
+  }
+
+  function cleanup() {
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    if (ws) { try { ws.close(); } catch {} }
+  }
+
+  // Kick off
+  connectWS();
+  // Pause animation when tab not visible (saves battery)
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) cleanup(); else connectWS();
+  });
+})();
+</script>
+</body>
+</html>

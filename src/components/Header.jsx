@@ -19,6 +19,12 @@ const Header = () => {
               to="/" 
               className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}
             >
+              Waiting Room
+            </Link>
+            <Link 
+              to="/dashboard" 
+              className={`nav-link ${location.pathname === '/dashboard' ? 'active' : ''}`}
+            >
               Dashboard
             </Link>
             <Link 
@@ -37,6 +43,13 @@ const Header = () => {
             <Link 
               to="/" 
               className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Waiting Room
+            </Link>
+            <Link 
+              to="/dashboard" 
+              className={`nav-link ${location.pathname === '/dashboard' ? 'active' : ''}`}
               onClick={() => setIsMenuOpen(false)}
             >
               Dashboard
