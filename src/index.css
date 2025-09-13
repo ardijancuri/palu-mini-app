@@ -411,7 +411,7 @@ main {
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
-  background-image: url('/src/assets/bg-stars.png');
+          background-image: url('/assets/bg-stars.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

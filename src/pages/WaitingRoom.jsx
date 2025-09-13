@@ -193,8 +193,8 @@ const WaitingRoom = () => {
           reject(new Error('Failed to load background image'));
         };
         
-        // Load the randomly selected background image
-        backgroundImg.src = `/src/assets/${randomImage}`;
+                // Load the randomly selected background image
+                backgroundImg.src = `/assets/${randomImage}`;
       });
       
     } catch (error) {
@@ -266,19 +266,19 @@ const WaitingRoom = () => {
   return (
     <div className="waiting-room" ref={waitingRoomRef}>
       {/* Planet decorations */}
-      <div className="planet planet-left">
-        <img src="/src/assets/plane1.png" alt="Planet 1" />
-      </div>
-      <div className="planet planet-center">
-        <img src="/src/assets/plane2.png" alt="Planet 2" />
-      </div>
+              <div className="planet planet-left">
+                <img src="/assets/plane1.png" alt="Planet 1" />
+              </div>
+              <div className="planet planet-center">
+                <img src="/assets/plane2.png" alt="Planet 2" />
+              </div>
               <div className="planet planet-right">
-                <img src="/src/assets/planet3.png" alt="Planet 3" />
+                <img src="/assets/planet3.png" alt="Planet 3" />
               </div>
               
               {/* PALU logo at bottom right */}
               <div className="palu-logo">
-                <img className='palu-logo' src="/src/assets/PALU.webp" alt="PALU" />
+                <img className='palu-logo' src="/assets/PALU.webp" alt="PALU" />
               </div>
               
               {/* Live Chat */}
