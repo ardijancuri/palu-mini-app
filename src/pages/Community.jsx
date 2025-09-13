@@ -1,10 +1,19 @@
 import { useState, useEffect } from 'react';
 import TokenCard from '../components/TokenCard';
 import useCommunityData from '../hooks/useCommunityData';
+import useLikes from '../hooks/useLikes';
 
 const Community = () => {
   const [sortBy, setSortBy] = useState('marketCap');
   const { tokens, loading, error, loadTokens } = useCommunityData();
+  const { 
+    getSessionLikesCount, 
+    sessionLikes, 
+    getLikeCount, 
+    addLike, 
+    hasLiked, 
+    canLike 
+  } = useLikes();
 
   useEffect(() => {
     loadTokens();
@@ -39,6 +48,8 @@ const Community = () => {
   };
 
   const sortedTokens = sortTokens(tokens, sortBy);
+  const sessionLikesUsed = sessionLikes.length;
+  const sessionLikesRemaining = 3 - sessionLikesUsed;
 
   const handleReload = () => {
     loadTokens();
@@ -77,6 +88,10 @@ const Community = () => {
         <div className="header-left">
           <h1>Community Tokens</h1>
           <div className="small">Community-driven token discovery</div>
+          <div className="likes-counter">
+            <span className="likes-used">Likes used: {sessionLikesUsed}/3</span>
+            <span className="likes-remaining">Remaining: {sessionLikesRemaining}</span>
+          </div>
         </div>
         <div className="sort-controls">
           <button 
@@ -107,6 +122,10 @@ const Community = () => {
             index={index}
             sortBy={sortBy}
             isCommunity={true}
+            getLikeCount={getLikeCount}
+            addLike={addLike}
+            hasLiked={hasLiked}
+            canLike={canLike}
           />
         ))}
       </div>

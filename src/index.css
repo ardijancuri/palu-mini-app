@@ -509,7 +509,7 @@ main {
   color: #fbbf24;
 }
 
-.token-metrics .upvote-container.disabled .upvote-count {
+.token-metrics .upvote-count {
   color: var(--muted);
 }
 
@@ -617,17 +617,10 @@ main {
   
   /* Mobile Layout Styles */
   .mobile-layout {
-    display: block;
-    width: 100%;
-  }
-  
-  .mobile-row-1 {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
     width: 100%;
     gap: 12px;
+    align-items: flex-start;
   }
 
   .mobile-token-image {
@@ -645,7 +638,7 @@ main {
     display: block;
   }
 
-  .mobile-token-details {
+  .mobile-content {
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -654,6 +647,13 @@ main {
   }
 
   .mobile-top-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .mobile-bottom-row {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 8px;
@@ -723,14 +723,16 @@ main {
     gap: 6px;
     cursor: pointer;
     transition: all 0.2s ease;
-    padding: 6px 10px;
+    padding: 8px 12px;
     border-radius: 20px;
-    min-width: 50px;
-    height: 36px;
+    min-width: 60px;
+    height: 32px;
     justify-content: center;
-    max-height: 36px;
-    max-width: 70px;
-    background: rgba(255, 255, 255, 0.1);
+    max-height: 32px;
+    max-width: 80px;
+    background: rgba(255, 255, 255, 0.15);
+    pointer-events: auto;
+    z-index: 10;
   }
   
   /* Desktop upvote styling - same as mobile */
@@ -740,12 +742,11 @@ main {
     gap: 6px;
     cursor: pointer;
     transition: all 0.2s ease;
-    padding: 8px 12px;
     border-radius: 20px;
     min-width: 60px;
-    height: 40px;
+    height: 32px;
     justify-content: center;
-    max-height: 40px;
+    max-height: 32px;
     max-width: 80px;
     background: rgba(255, 255, 255, 0.15) !important;
     pointer-events: auto;
@@ -800,7 +801,7 @@ main {
   }
   
   .upvote-container:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.25);
   }
   
   .upvote-container:hover .upvote-icon {
@@ -812,7 +813,7 @@ main {
   }
   
   .upvote-icon {
-    font-size: 24px;
+    font-size: 20px;
     color: var(--muted);
     transition: all 0.2s ease;
     font-family: "Font Awesome 6 Free";
@@ -842,11 +843,11 @@ main {
   .upvote-count {
     font-weight: 600;
     color: var(--muted);
-    font-size: 10px;
+    font-size: 12px;
   }
   
   .upvote-container.upvoted .upvote-count {
-    color: #ef4444;
+    color: #fbbf24;
     font-weight: 700;
   }
 
@@ -860,13 +861,12 @@ main {
   }
 
   .upvote-container.disabled {
-    opacity: 0.3;
     pointer-events: none;
     cursor: not-allowed;
     background: rgba(255, 255, 255, 0.05);
   }
 
-  .upvote-container.disabled .upvote-icon {
+  .upvote-container.disabled {
     color: var(--muted);
   }
 
@@ -874,14 +874,6 @@ main {
     color: var(--muted);
   }
   
-  .mobile-metrics-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
-    width: 100%;
-    margin-top: 8px;
-    text-align: left;
-  }
   
   .mobile-metric {
     text-align: left;
@@ -1023,14 +1015,4 @@ button[type="submit"] {
   border: 0;
   border-radius: 12px;
   cursor: pointer;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg: #f5f7fb;
-    --card: #ffffff;
-    --text: #101419;
-    --muted: #4a5562;
-    --border: #e3e8ef;
-  }
 }

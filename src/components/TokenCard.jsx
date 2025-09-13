@@ -110,44 +110,42 @@ const TokenCard = ({
       
       {/* Mobile Layout */}
       <div className="mobile-layout">
-        <div className="mobile-row-1">
-          <div className="mobile-token-image">
-            {img && <img className="mobile-token-logo" src={img} alt={name} />}
-          </div>
-          <div className="mobile-token-details">
-            <div className="mobile-top-row">
-              <div className="mobile-token-ticker">
-                <div className="ticker">{symbol}</div>
-                <div className="small" style={{color: changeColor}}>{changeStr}</div>
-              </div>
-              <div className="mobile-market-cap">
-                <div className="main">{formatUsd(mc)}</div>
-                <div className="sub">Market Cap</div>
-              </div>
-              <UpvoteButton 
-                address={token.address}
-                count={upvoteCount}
-                isUpvoted={hasLiked(token.address)}
-                onUpvote={handleUpvote}
-                isMobile={true}
-                isLoading={isAddingLike}
-                disabled={!canLike(token.address)}
-              />
-            </div>
-          </div>
+        <div className="mobile-token-image">
+          {img && <img className="mobile-token-logo" src={img} alt={name} />}
         </div>
-        <div className="mobile-metrics-row">
-          <div className="mobile-metric">
-            <div className="main">{formatPrice(price)}</div>
-            <div className="sub">Price</div>
+        <div className="mobile-content">
+          <div className="mobile-top-row">
+            <div className="mobile-token-ticker">
+              <div className="ticker">{symbol}</div>
+              <div className="small" style={{color: changeColor}}>{changeStr}</div>
+            </div>
+            <div className="mobile-market-cap">
+              <div className="main">{formatUsd(mc)}</div>
+              <div className="sub">Market Cap</div>
+            </div>
+            <UpvoteButton 
+              address={token.address}
+              count={upvoteCount}
+              isUpvoted={hasLiked(token.address)}
+              onUpvote={handleUpvote}
+              isMobile={true}
+              isLoading={isAddingLike}
+              disabled={!canLike(token.address)}
+            />
           </div>
-          <div className="mobile-metric">
-            <div className="main">{formatLiquidity(liq)}</div>
-            <div className="sub">Liquidity</div>
-          </div>
-          <div className="mobile-metric">
-            <div className="main">{formatUsd(vol)}</div>
-            <div className="sub">Volume</div>
+          <div className="mobile-bottom-row">
+            <div className="mobile-metric">
+              <div className="main">{formatPrice(price)}</div>
+              <div className="sub">Price</div>
+            </div>
+            <div className="mobile-metric">
+              <div className="main">{formatLiquidity(liq)}</div>
+              <div className="sub">Liquidity</div>
+            </div>
+            <div className="mobile-metric">
+              <div className="main">{formatUsd(vol)}</div>
+              <div className="sub">Volume</div>
+            </div>
           </div>
         </div>
       </div>
