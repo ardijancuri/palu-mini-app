@@ -255,136 +255,9 @@ main {
 .card p { margin: 0; color: var(--muted); }
 .card.muted { opacity: 0.9; }
 
-/* Dashboard specific styles */
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-  gap: 16px;
-}
-
-.header-left {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.header h1 {
-  font-size: 20px;
-  font-weight: 700;
-  margin: 0;
-}
-
-.small {
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.likes-counter {
-  display: flex;
-  gap: 16px;
-  margin-top: 4px;
-  font-size: 11px;
-}
-
-.likes-used {
-  color: #fbbf24;
-  font-weight: 600;
-}
-
-.likes-remaining {
-  color: var(--muted);
-  font-weight: 500;
-}
-
-.sort-controls {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.sort-btn {
-  background: var(--card);
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 8px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.chevron-icon {
-  transition: transform 0.2s ease;
-  flex-shrink: 0;
-}
-
-.reload-btn {
-  background: var(--accent);
-  border: 1px solid var(--accent);
-  color: #000;
-  padding: 8px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-}
-
-.reload-btn:hover {
-  background: var(--accent);
-  color: #000;
-  border-color: var(--accent);
-}
-
-.reload-btn:active {
-  transform: scale(0.95);
-}
-
-.reload-icon {
-  transition: transform 0.3s ease;
-  font-size: 14px;
-}
-
-.chevron-icon {
-  font-size: 12px;
-}
 
 .menu-toggle i {
   font-size: 18px;
-}
-
-.reload-btn:hover .reload-icon {
-  transform: rotate(180deg);
-}
-
-.sort-btn:hover {
-  background: var(--accent);
-  color: #000;
-  border-color: var(--accent);
-  font-weight: 500;
-}
-
-.sort-btn.active {
-  background: var(--accent);
-  color: #000;
-  border-color: var(--accent);
-  font-weight: 500;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
 }
 .token-card {
   background: var(--card);
@@ -1306,28 +1179,6 @@ main {
     white-space: nowrap;
   }
   
-  .header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  
-  .sort-controls {
-    width: 100%;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-  }
-  
-  .sort-btn {
-    font-size: 12px;
-    padding: 6px 12px;
-  }
-  
-  .reload-btn {
-    width: 32px;
-    height: 32px;
-    padding: 6px;
-  }
   
   .token-card {
     flex-direction: column;
@@ -1693,14 +1544,6 @@ main {
     font-size: 14px;
   }
   
-  .sort-controls {
-    gap: 6px;
-  }
-  
-  .sort-btn {
-    font-size: 11px;
-    padding: 4px 8px;
-  }
   
   .token-card {
     padding: 12px;
@@ -1755,6 +1598,7 @@ button[type="submit"] {
   border-radius: 12px;
   cursor: pointer;
 }
+
 
 /* Functional Chat Styles */
 .connection-indicator {

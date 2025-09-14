@@ -13,7 +13,9 @@ const Header = () => {
     <header className="app-header">
       <div className="header-content">
         <div className="logo-container">
-          <img src="/assets/palu-logo.png" alt="PALU" className="header-logo" />
+          <Link to="/">
+            <img src="/assets/palu-logo.png" alt="PALU" className="header-logo" />
+          </Link>
         </div>
         <div className="nav-container">
           <nav className="main-nav">
@@ -37,6 +39,20 @@ const Header = () => {
               </span>
               <span className="coming-soon-label">Coming Soon</span>
             </div>
+            <div className="nav-item-with-label">
+              <span 
+                className="nav-link disabled"
+              >
+                PALU Tools
+              </span>
+              <span className="coming-soon-label">Coming Soon</span>
+            </div>
+            <Link 
+              to="/contact" 
+              className={`nav-link ${location.pathname === '/contact' ? 'active' : ''}`}
+            >
+              Contact Us
+            </Link>
           </nav>
         </div>
         <div className="mobile-menu">
@@ -66,6 +82,21 @@ const Header = () => {
               </span>
               <span className="coming-soon-label">Coming Soon</span>
             </div>
+            <div className="nav-item-with-label">
+              <span 
+                className="nav-link disabled"
+              >
+                PALU Tools
+              </span>
+              <span className="coming-soon-label">Coming Soon</span>
+            </div>
+            <Link 
+              to="/contact" 
+              className={`nav-link ${location.pathname === '/contact' ? 'active' : ''}`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Contact Us
+            </Link>
           </nav>
         </div>
       </div>

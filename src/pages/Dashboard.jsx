@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import TokenCard from '../components/TokenCard';
 import useTokenData from '../hooks/useTokenData';
 import useLikes from '../hooks/useLikes';
+import './Dashboard.css';
 
 const Dashboard = () => {
   const [sortBy, setSortBy] = useState('marketCap');

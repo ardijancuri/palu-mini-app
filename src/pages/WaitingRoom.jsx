@@ -126,15 +126,13 @@ const WaitingRoom = () => {
     return Math.floor(price).toString();
   };
 
-  const captureScreenshot = async () => {
+  const createShareBlob = async (priceText) => {
     try {
-      console.log('Starting screenshot capture...');
+      console.log('Starting image creation...');
       
-      // Create a canvas with the background image and price overlay
+      const size = 1080;
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      const size = 1080; // High resolution for better quality
-      
       canvas.width = size;
       canvas.height = size;
       
@@ -147,148 +145,125 @@ const WaitingRoom = () => {
       console.log('Selected background image:', randomImage);
       
       // Load the background image
-      const backgroundImg = new Image();
-      backgroundImg.crossOrigin = 'anonymous';
+      const bg = new Image();
+      bg.crossOrigin = 'anonymous';
       
-      return new Promise((resolve, reject) => {
-        backgroundImg.onload = () => {
-          try {
-            // Draw the background image
-            ctx.drawImage(backgroundImg, 0, 0, size, size);
-            
-            // Set up text styling
-            ctx.fillStyle = '#F5C908'; // Golden color
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            
-            // Calculate position (30% from top, horizontally centered)
-            const x = size / 2; // Horizontally centered
-            const y = size * 0.27; // 30% from top
-            
-            // Set font size based on canvas size
-            const fontSize = Math.floor(size * 0.18); // 16% of canvas size for bigger price
-            ctx.font = `600 ${fontSize}px Oswald, sans-serif`;
-            
-            // Add text shadow for better visibility
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-            ctx.shadowBlur = 20; // Increased for higher resolution
-            ctx.shadowOffsetX = 4;
-            ctx.shadowOffsetY = 4;
-            
-            // Draw the price text
-            const priceText = `BNB $${formatPrice(bnbPrice)}`;
-            ctx.fillText(priceText, x, y);
-            
-            // Reset shadow
-            ctx.shadowColor = 'transparent';
-            ctx.shadowBlur = 0;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 0;
-            
-                    console.log('Screenshot created successfully with background:', randomImage);
-                    resolve(canvas.toDataURL('image/png', 1.0)); // Maximum quality
-          } catch (error) {
-            console.error('Error creating screenshot:', error);
-            reject(error);
-          }
-        };
-        
-        backgroundImg.onerror = () => {
-          console.error('Failed to load background image:', randomImage);
-          reject(new Error('Failed to load background image'));
-        };
-        
-                // Load the randomly selected background image
-                backgroundImg.src = `/assets/${randomImage}`;
+      await new Promise((resolve, reject) => {
+        bg.onload = resolve;
+        bg.onerror = () => reject(new Error('Failed to load background'));
+        bg.src = `/assets/${randomImage}`;
       });
       
+      // Draw the background image
+      ctx.drawImage(bg, 0, 0, size, size);
+      
+      // Set text properties for the price (keeping your current styling)
+      ctx.fillStyle = '#F5C908';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      
+      // Calculate position (keeping your current position)
+      const x = size / 2; // Horizontally centered
+      const y = size * 0.27; // 27% from top (your current position)
+      
+      // Set font size (keeping your current size)
+      const fontSize = Math.floor(size * 0.18); // 18% of canvas size (your current size)
+      ctx.font = `600 ${fontSize}px Oswald, sans-serif`;
+      
+      // Add shadow for better visibility (keeping your current shadow)
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+      ctx.shadowBlur = 20;
+      ctx.shadowOffsetX = 4;
+      ctx.shadowOffsetY = 4;
+      
+      // Draw the price text
+      ctx.fillText(priceText, x, y);
+      
+      // Convert canvas to blob
+      const blob = await new Promise(res => canvas.toBlob(res, 'image/png', 1.0));
+      if (!blob) throw new Error('Failed to create image blob');
+      
+      console.log('Image blob created successfully');
+      return blob;
+      
     } catch (error) {
-      console.error('Screenshot failed:', error);
-      console.error('Error details:', error.message);
-      console.error('Error stack:', error.stack);
-      return null;
+      console.error('Image creation failed:', error);
+      throw error;
     }
+  };
+
+  const copyImageToClipboard = async (blob) => {
+    if (!navigator.clipboard || !window.ClipboardItem) return false;
+
+    try {
+      if (navigator.permissions?.query) {
+        // Best-effort: log/prime permission state
+        await navigator.permissions.query({ name: 'clipboard-write' });
+      }
+
+      const primaryType = blob.type || 'image/png';
+      await navigator.clipboard.write([
+        new ClipboardItem({ [primaryType]: blob })
+      ]);
+      return true;
+    } catch (_) {
+      // Fallbacks
+      try {
+        await navigator.clipboard.write([
+          new ClipboardItem({ 'image/png': blob })
+        ]);
+        return true;
+      } catch (_) {
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({ 'image/jpeg': blob })
+          ]);
+          return true;
+        } catch {
+          return false;
+        }
+      }
+    }
+  };
+
+  const openTwitterIntent = (text) => {
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  };
+
+  const openTwitterDeepLink = (text) => {
+    const deep = `twitter://post?message=${encodeURIComponent(text)}`;
+    window.location.href = deep; // Open X app composer
   };
 
   const shareToTwitter = async () => {
     setIsSharing(true);
     
     try {
-      const screenshot = await captureScreenshot();
+      // 1) Ensure image is ready
+      const priceText = `BNB $${formatPrice(bnbPrice)}`;
+      const blob = await createShareBlob(priceText);
+
+      // 2) Try to copy image
+      const copied = await copyImageToClipboard(blob);
       
-      if (!screenshot) {
-        alert('Failed to capture screenshot');
-        return;
+      // 3) Show appropriate message
+      if (copied) {
+        alert('Image copied. Open X and paste it into your tweet.');
+      } else {
+        alert('Could not copy automatically. When X opens, paste if available or attach the image.');
       }
 
-      // Convert data URL to blob
-      const response = await fetch(screenshot);
-      const blob = await response.blob();
+      // 4) Open composer
+      const text = `BNB is at $${formatPrice(bnbPrice)}! 🚀\nWaiting for $1000! 🚀\n\nWaiting Room: bnb.palu.meme\n#BNB #BNBChain #Crypto #ToTheMoon`;
       
-      // Check if mobile device
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+                    (/Macintosh/.test(navigator.userAgent) && 'ontouchend' in document);
       
-      if (isMobile) {
-        // Mobile approach: Use Twitter's native sharing with image
-        try {
-          // Create a temporary link to download the image
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `bnb-${formatPrice(bnbPrice)}-${Date.now()}.png`;
-          
-          // Trigger download
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-          
-          // Open Twitter with text and let user attach the downloaded image
-          const text = `BNB is at $${formatPrice(bnbPrice)}! 🚀\nWaiting for $1000! 🚀\n\nWaiting Room: bnb.palu.meme\n\n#BNB #BNBChain #Crypto #ToTheMoon`;
-          const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-          
-          alert('📸 Screenshot downloaded!\n\nOpening X/Twitter...\n\nAttach the downloaded image to your tweet!');
-          window.open(twitterUrl, '_blank');
-          
-        } catch (mobileError) {
-          console.error('Mobile share failed:', mobileError);
-          alert('Mobile sharing failed. Please try again.');
-        }
+      if (isIOS) {
+        openTwitterDeepLink(text);
       } else {
-        // Desktop approach: Copy to clipboard
-        try {
-          await navigator.clipboard.write([
-            new ClipboardItem({
-              'image/png': blob
-            })
-          ]);
-          
-          // Create Twitter share URL with text
-          const text = `BNB is at $${formatPrice(bnbPrice)}! 🚀\nWaiting for $1000! 🚀\n\nWaiting Room: bnb.palu.meme\n#BNB #BNBChain #ToTheMoon`;
-          const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-          
-          // Show success message and open Twitter
-          alert('📸 Screenshot copied to clipboard!\n\nOpening X/Twitter...\n\nJust paste (Ctrl+V) to add the image to your tweet!');
-          
-          // Open Twitter/X in new tab
-          window.open(twitterUrl, '_blank');
-          
-        } catch (clipboardError) {
-          console.error('Clipboard copy failed:', clipboardError);
-          
-          // Fallback: download the image if clipboard fails
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `bnb-${formatPrice(bnbPrice)}-${Date.now()}.png`;
-          
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-          
-          alert('📸 Screenshot downloaded!\n\nClipboard access denied. Image has been downloaded instead.');
-        }
+        openTwitterIntent(text);
       }
       
     } catch (error) {
