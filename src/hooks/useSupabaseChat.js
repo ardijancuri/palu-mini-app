@@ -38,13 +38,19 @@ export const useSupabaseChat = () => {
     try {
       setError(null);
       
-      // Load recent messages
-      const recentMessages = await chatService.getRecentMessages(20);
+      // Load recent messages (up to 100)
+      const recentMessages = await chatService.getRecentMessages(100);
       setMessages(recentMessages);
       
       // Subscribe to new messages
       subscriptionRef.current = chatService.subscribeToMessages((newMessage) => {
-        setMessages(prev => [...prev, newMessage]);
+        setMessages(prev => {
+          const updatedMessages = [...prev, newMessage];
+          // Keep only the last 100 messages on the client side
+          return updatedMessages.length > 100 
+            ? updatedMessages.slice(-100) 
+            : updatedMessages;
+        });
       });
       
       setIsConnected(true);
