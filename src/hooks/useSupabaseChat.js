@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
+import { supabase } from '../lib/supabase';
 
-export const useChat = () => {
+export const useSupabaseChat = () => {
   const [messages, setMessages] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState(null);
   const [username, setUsername] = useState('');
   const [isUsernameSet, setIsUsernameSet] = useState(false);
-  const wsRef = useRef(null);
-  const reconnectTimeoutRef = useRef(null);
+  const subscriptionRef = useRef(null);
 
   // Generate a random username if not set
   const generateRandomUsername = () => {
@@ -33,101 +33,96 @@ export const useChat = () => {
     }
   }, []);
 
-  // Connect to WebSocket
-  const connect = () => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      return;
-    }
-
+  // Connect to Supabase Realtime
+  const connect = async () => {
     try {
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      // Use port 3000 for WebSocket server (backend)
-      const wsUrl = `${protocol}//localhost:3000`;
-      
-      wsRef.current = new WebSocket(wsUrl);
+      setIsConnected(false);
+      setError(null);
 
-      wsRef.current.onopen = () => {
-        console.log('Chat WebSocket connected');
-        setIsConnected(true);
-        setError(null);
-      };
+      // Fetch recent messages
+      const { data: recentMessages, error: fetchError } = await supabase
+        .from('chat_messages')
+        .select('*')
+        .order('created_at', { ascending: true })
+        .limit(20);
 
-      wsRef.current.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          
-          switch (data.type) {
-            case 'recent_messages':
-              setMessages(data.messages);
-              break;
-            case 'new_message':
-              setMessages(prev => [...prev, data.message]);
-              break;
-            case 'error':
-              setError(data.message);
-              break;
-            default:
-              console.log('Unknown message type:', data.type);
+      if (fetchError) {
+        console.error('Error fetching messages:', fetchError);
+        setError('Failed to load chat history');
+        return;
+      }
+
+      setMessages(recentMessages || []);
+
+      // Subscribe to new messages
+      subscriptionRef.current = supabase
+        .channel('chat_messages')
+        .on('postgres_changes', 
+          { 
+            event: 'INSERT', 
+            schema: 'public', 
+            table: 'chat_messages' 
+          }, 
+          (payload) => {
+            console.log('New message received:', payload.new);
+            setMessages(prev => [...prev, payload.new]);
           }
-        } catch (err) {
-          console.error('Error parsing WebSocket message:', err);
-        }
-      };
-
-      wsRef.current.onclose = () => {
-        console.log('Chat WebSocket disconnected');
-        setIsConnected(false);
-        
-        // Attempt to reconnect after 3 seconds
-        reconnectTimeoutRef.current = setTimeout(() => {
-          connect();
-        }, 3000);
-      };
-
-      wsRef.current.onerror = (error) => {
-        console.error('Chat WebSocket error:', error);
-        setError('Connection error. Retrying...');
-      };
+        )
+        .subscribe((status) => {
+          console.log('Supabase subscription status:', status);
+          if (status === 'SUBSCRIBED') {
+            setIsConnected(true);
+            setError(null);
+          } else if (status === 'CHANNEL_ERROR') {
+            setError('Connection error. Retrying...');
+            setIsConnected(false);
+          }
+        });
 
     } catch (err) {
-      console.error('Error creating WebSocket connection:', err);
+      console.error('Error connecting to Supabase:', err);
       setError('Failed to connect to chat');
+      setIsConnected(false);
     }
   };
 
-  // Disconnect from WebSocket
+  // Disconnect from Supabase
   const disconnect = () => {
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current);
-      reconnectTimeoutRef.current = null;
+    if (subscriptionRef.current) {
+      supabase.removeChannel(subscriptionRef.current);
+      subscriptionRef.current = null;
     }
-    
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
-    }
-    
     setIsConnected(false);
   };
 
   // Send a message
-  const sendMessage = (messageText) => {
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
-      setError('Not connected to chat');
-      return false;
-    }
-
+  const sendMessage = async (messageText) => {
     if (!messageText.trim()) {
       setError('Message cannot be empty');
       return false;
     }
 
+    if (messageText.length > 500) {
+      setError('Message too long (max 500 characters)');
+      return false;
+    }
+
     try {
-      wsRef.current.send(JSON.stringify({
-        type: 'chat_message',
-        username: username,
-        message: messageText.trim()
-      }));
+      const { error } = await supabase
+        .from('chat_messages')
+        .insert([
+          {
+            username: username.trim(),
+            message: messageText.trim()
+          }
+        ]);
+
+      if (error) {
+        console.error('Error sending message:', error);
+        setError('Failed to send message');
+        return false;
+      }
+
       setError(null);
       return true;
     } catch (err) {
