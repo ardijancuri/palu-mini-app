@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS chat_messages (
     id BIGSERIAL PRIMARY KEY,
     username VARCHAR(50) NOT NULL,
     message TEXT NOT NULL,
+    user_ip INET,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

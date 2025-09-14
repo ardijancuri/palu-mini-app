@@ -163,11 +163,11 @@ const WaitingRoom = () => {
             
             // Calculate position (30% from top, horizontally centered)
             const x = size / 2; // Horizontally centered
-            const y = size * 0.3; // 30% from top
+            const y = size * 0.27; // 30% from top
             
-                    // Set font size based on canvas size
-                    const fontSize = Math.floor(size * 0.12); // 12% of canvas size for better proportion
-                    ctx.font = `600 ${fontSize}px Oswald, sans-serif`;
+            // Set font size based on canvas size
+            const fontSize = Math.floor(size * 0.18); // 16% of canvas size for bigger price
+            ctx.font = `600 ${fontSize}px Oswald, sans-serif`;
             
             // Add text shadow for better visibility
             ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
@@ -244,7 +244,7 @@ const WaitingRoom = () => {
           URL.revokeObjectURL(url);
           
           // Open Twitter with text and let user attach the downloaded image
-          const text = `BNB is at $${formatPrice(bnbPrice)}! 🚀\nWaiting for $1000! 🚀\n\n#BNB #Binance #Crypto #ToTheMoon #X`;
+          const text = `BNB is at $${formatPrice(bnbPrice)}! 🚀\nWaiting for $1000! 🚀\n\nWaiting Room: bnb.palu.meme\n\n#BNB #BNBChain #Crypto #ToTheMoon`;
           const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
           
           alert('📸 Screenshot downloaded!\n\nOpening X/Twitter...\n\nAttach the downloaded image to your tweet!');
@@ -264,7 +264,7 @@ const WaitingRoom = () => {
           ]);
           
           // Create Twitter share URL with text
-          const text = `BNB is at $${formatPrice(bnbPrice)}! 🚀\nWaiting for $1000! 🚀\n\n#BNB #Binance #Crypto #ToTheMoon #X`;
+          const text = `BNB is at $${formatPrice(bnbPrice)}! 🚀\nWaiting for $1000! 🚀\n\nWaiting Room: bnb.palu.meme\n#BNB #BNBChain #ToTheMoon`;
           const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
           
           // Show success message and open Twitter

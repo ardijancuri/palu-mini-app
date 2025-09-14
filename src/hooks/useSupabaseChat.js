@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { supabase } from '../lib/supabase';
+import { chatService } from '../lib/supabase';
 
 export const useSupabaseChat = () => {
   const [messages, setMessages] = useState([]);
@@ -33,55 +33,26 @@ export const useSupabaseChat = () => {
     }
   }, []);
 
-  // Connect to Supabase Realtime
+  // Connect to Supabase and load messages
   const connect = async () => {
     try {
-      setIsConnected(false);
       setError(null);
-
-      // Fetch recent messages
-      const { data: recentMessages, error: fetchError } = await supabase
-        .from('chat_messages')
-        .select('*')
-        .order('created_at', { ascending: true })
-        .limit(20);
-
-      if (fetchError) {
-        console.error('Error fetching messages:', fetchError);
-        setError('Failed to load chat history');
-        return;
-      }
-
-      setMessages(recentMessages || []);
-
+      
+      // Load recent messages
+      const recentMessages = await chatService.getRecentMessages(20);
+      setMessages(recentMessages);
+      
       // Subscribe to new messages
-      subscriptionRef.current = supabase
-        .channel('chat_messages')
-        .on('postgres_changes', 
-          { 
-            event: 'INSERT', 
-            schema: 'public', 
-            table: 'chat_messages' 
-          }, 
-          (payload) => {
-            console.log('New message received:', payload.new);
-            setMessages(prev => [...prev, payload.new]);
-          }
-        )
-        .subscribe((status) => {
-          console.log('Supabase subscription status:', status);
-          if (status === 'SUBSCRIBED') {
-            setIsConnected(true);
-            setError(null);
-          } else if (status === 'CHANNEL_ERROR') {
-            setError('Connection error. Retrying...');
-            setIsConnected(false);
-          }
-        });
-
+      subscriptionRef.current = chatService.subscribeToMessages((newMessage) => {
+        setMessages(prev => [...prev, newMessage]);
+      });
+      
+      setIsConnected(true);
+      console.log('Supabase chat connected');
+      
     } catch (err) {
-      console.error('Error connecting to Supabase:', err);
-      setError('Failed to connect to chat');
+      console.error('Error connecting to Supabase chat:', err);
+      setError('Failed to connect to chat. Please check your Supabase configuration.');
       setIsConnected(false);
     }
   };
@@ -89,7 +60,7 @@ export const useSupabaseChat = () => {
   // Disconnect from Supabase
   const disconnect = () => {
     if (subscriptionRef.current) {
-      supabase.removeChannel(subscriptionRef.current);
+      chatService.unsubscribeFromMessages(subscriptionRef.current);
       subscriptionRef.current = null;
     }
     setIsConnected(false);
@@ -102,27 +73,13 @@ export const useSupabaseChat = () => {
       return false;
     }
 
-    if (messageText.length > 500) {
-      setError('Message too long (max 500 characters)');
+    if (!isConnected) {
+      setError('Not connected to chat');
       return false;
     }
 
     try {
-      const { error } = await supabase
-        .from('chat_messages')
-        .insert([
-          {
-            username: username.trim(),
-            message: messageText.trim()
-          }
-        ]);
-
-      if (error) {
-        console.error('Error sending message:', error);
-        setError('Failed to send message');
-        return false;
-      }
-
+      await chatService.sendMessage(username, messageText);
       setError(null);
       return true;
     } catch (err) {
