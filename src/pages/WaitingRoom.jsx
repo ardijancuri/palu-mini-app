@@ -192,37 +192,84 @@ const WaitingRoom = () => {
     }
   };
 
+  const isIOSDevice = () =>
+    /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+    (/Macintosh/.test(navigator.userAgent) && 'ontouchend' in document);
+
+  const isMobileDevice = () =>
+    /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
   const copyImageToClipboard = async (blob) => {
-    if (!navigator.clipboard || !window.ClipboardItem) return false;
+    const clipboard = navigator.clipboard;
+    const ClipboardItemCtor =
+      typeof window !== 'undefined'
+        ? window.ClipboardItem || window.WebKitClipboardItem
+        : null;
+
+    if (!clipboard?.write || !ClipboardItemCtor) {
+      return { success: false, reason: 'unsupported' };
+    }
 
     try {
       if (navigator.permissions?.query) {
-        // Best-effort: log/prime permission state
-        await navigator.permissions.query({ name: 'clipboard-write' });
-      }
-
-      const primaryType = blob.type || 'image/png';
-      await navigator.clipboard.write([
-        new ClipboardItem({ [primaryType]: blob })
-      ]);
-      return true;
-    } catch (_) {
-      // Fallbacks
-      try {
-        await navigator.clipboard.write([
-          new ClipboardItem({ 'image/png': blob })
-        ]);
-        return true;
-      } catch (_) {
         try {
-          await navigator.clipboard.write([
-            new ClipboardItem({ 'image/jpeg': blob })
-          ]);
-          return true;
-        } catch {
-          return false;
+          const permission = await navigator.permissions.query({
+            name: 'clipboard-write'
+          });
+          if (permission.state === 'denied') {
+            return { success: false, reason: 'denied' };
+          }
+        } catch (permissionError) {
+          console.warn('Clipboard permission query failed', permissionError);
         }
       }
+
+      const preferredTypes = [];
+      if (blob.type && blob.type.startsWith('image/')) {
+        preferredTypes.push(blob.type);
+      }
+      preferredTypes.push('image/png', 'image/jpeg');
+
+      for (const type of preferredTypes) {
+        try {
+          const item = new ClipboardItemCtor({ [type]: blob });
+          await clipboard.write([item]);
+          return { success: true, type };
+        } catch (err) {
+          console.warn(`Clipboard write failed for ${type}`, err);
+        }
+      }
+    } catch (error) {
+      console.warn('Clipboard image copy failed', error);
+    }
+
+    return { success: false, reason: 'error' };
+  };
+
+  const shareImageViaShareSheet = async (blob, shareText) => {
+    if (!isMobileDevice()) {
+      return false;
+    }
+
+    if (!navigator.share || !navigator.canShare || typeof File === 'undefined') {
+      return false;
+    }
+
+    try {
+      const file = new File([blob], 'bnb-share.png', { type: 'image/png' });
+      if (!navigator.canShare({ files: [file], text: shareText })) {
+        return false;
+      }
+
+      await navigator.share({
+        files: [file],
+        text: shareText,
+        title: 'Share BNB Price'
+      });
+      return true;
+    } catch (error) {
+      console.warn('Web Share API failed or was cancelled', error);
+      return false;
     }
   };
 
@@ -238,34 +285,39 @@ const WaitingRoom = () => {
 
   const shareToTwitter = async () => {
     setIsSharing(true);
-    
+
     try {
-      // 1) Ensure image is ready
       const priceText = `BNB $${formatPrice(bnbPrice)}`;
+      const shareText = `BNB is at $${formatPrice(bnbPrice)}! ??
+Waiting for $1000! ??
+
+Waiting Room: bnb.palu.meme
+#BNB #BNBChain #Crypto #ToTheMoon`;
       const blob = await createShareBlob(priceText);
 
-      // 2) Try to copy image
-      const copied = await copyImageToClipboard(blob);
-      
-      // 3) Show appropriate message
-      if (copied) {
+      const clipboardResult = await copyImageToClipboard(blob);
+      let shareMethod = 'clipboard';
+
+      if (clipboardResult.success) {
         alert('Image copied. Open X and paste it into your tweet.');
       } else {
-        alert('Could not copy automatically. When X opens, paste if available or attach the image.');
+        const sharedViaSheet = await shareImageViaShareSheet(blob, shareText);
+        if (sharedViaSheet) {
+          shareMethod = 'share-sheet';
+          alert('Shared image via your device share sheet. Choose X to post with the prefilled text.');
+        } else {
+          shareMethod = 'fallback';
+          alert('Could not copy automatically. When X opens, paste if available or attach the image.');
+        }
       }
 
-      // 4) Open composer
-      const text = `BNB is at $${formatPrice(bnbPrice)}! 🚀\nWaiting for $1000! 🚀\n\nWaiting Room: bnb.palu.meme\n#BNB #BNBChain #Crypto #ToTheMoon`;
-      
-      const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
-                    (/Macintosh/.test(navigator.userAgent) && 'ontouchend' in document);
-      
-      if (isIOS) {
-        openTwitterDeepLink(text);
-      } else {
-        openTwitterIntent(text);
+      if (shareMethod !== 'share-sheet') {
+        if (isIOSDevice()) {
+          openTwitterDeepLink(shareText);
+        } else {
+          openTwitterIntent(shareText);
+        }
       }
-      
     } catch (error) {
       console.error('Share failed:', error);
       alert('Failed to share. Please try again.');
@@ -328,3 +380,5 @@ const WaitingRoom = () => {
 };
 
 export default WaitingRoom;
+
+
