@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import TokenCard from '../components/TokenCard';
 import useCommunityData from '../hooks/useCommunityData';
-import useLikes from '../hooks/useLikes';
+import useCommunityLikes from '../hooks/useCommunityLikes';
 import './Dashboard.css';
 
 const Community = () => {
@@ -14,7 +14,7 @@ const Community = () => {
     addLike, 
     hasLiked, 
     canLike 
-  } = useLikes();
+  } = useCommunityLikes();
 
   useEffect(() => {
     loadTokens();

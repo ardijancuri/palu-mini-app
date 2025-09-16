@@ -45,6 +45,30 @@ class Like {
     const result = await pool.query(query, [limit]);
     return result.rows;
   }
+
+  // Community token likes methods
+  static async addCommunityLike(tokenAddress, userIp) {
+    const query = `
+      INSERT INTO community_likes (token_address, user_ip)
+      VALUES ($1, $2)
+      RETURNING *
+    `;
+    
+    const result = await pool.query(query, [tokenAddress, userIp]);
+    return result.rows[0];
+  }
+
+  static async getCommunityLikeCount(tokenAddress) {
+    const query = 'SELECT COUNT(*) as count FROM community_likes WHERE token_address = $1';
+    const result = await pool.query(query, [tokenAddress]);
+    return parseInt(result.rows[0].count);
+  }
+
+  static async hasUserLikedCommunity(tokenAddress, userIp) {
+    const query = 'SELECT COUNT(*) as count FROM community_likes WHERE token_address = $1 AND user_ip = $2';
+    const result = await pool.query(query, [tokenAddress, userIp]);
+    return parseInt(result.rows[0].count) > 0;
+  }
 }
 
 export default Like;

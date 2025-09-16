@@ -105,6 +105,57 @@ const server = http.createServer(async (req, res) => {
   const { default: Token } = await import('./models/Token.js');
   const { default: Like } = await import('./models/Like.js');
   
+  // Handle Community Tokens API routes
+  if (url.pathname === '/api/community-tokens') {
+    try {
+      if (req.method === 'GET') {
+        const tokens = await Token.getAllCommunity();
+        sendJson(res, 200, { success: true, data: tokens });
+      } else {
+        sendJson(res, 405, { success: false, error: 'Method Not Allowed' });
+      }
+    } catch (err) {
+      sendJson(res, 500, { success: false, error: err.message });
+    }
+    return;
+  }
+
+  if (url.pathname.startsWith('/api/community-tokens/') && url.pathname.endsWith('/like')) {
+    try {
+      const address = url.pathname.split('/api/community-tokens/')[1].replace('/like', '');
+      const userIp = getClientIP(req);
+      
+      if (req.method === 'POST') {
+        const like = await Like.addCommunityLike(address, userIp);
+        const likeCount = await Like.getCommunityLikeCount(address);
+        sendJson(res, 200, { success: true, data: { liked: true, likeCount } });
+      } else {
+        sendJson(res, 405, { success: false, error: 'Method Not Allowed' });
+      }
+    } catch (err) {
+      sendJson(res, 500, { success: false, error: err.message });
+    }
+    return;
+  }
+
+  if (url.pathname.startsWith('/api/community-tokens/') && url.pathname.endsWith('/likes')) {
+    try {
+      const address = url.pathname.split('/api/community-tokens/')[1].replace('/likes', '');
+      const userIp = getClientIP(req);
+      
+      if (req.method === 'GET') {
+        const likeCount = await Like.getCommunityLikeCount(address);
+        const hasLiked = await Like.hasUserLikedCommunity(address, userIp);
+        sendJson(res, 200, { success: true, data: { likeCount, hasLiked } });
+      } else {
+        sendJson(res, 405, { success: false, error: 'Method Not Allowed' });
+      }
+    } catch (err) {
+      sendJson(res, 500, { success: false, error: err.message });
+    }
+    return;
+  }
+
   // Handle Database API routes
   if (url.pathname === '/api/tokens') {
     try {

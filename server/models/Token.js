@@ -26,6 +26,12 @@ class Token {
     return result.rows;
   }
 
+  static async getAllCommunity() {
+    const query = 'SELECT * FROM community_tokens ORDER BY like_count DESC, created_at DESC';
+    const result = await pool.query(query);
+    return result.rows;
+  }
+
   static async delete(address) {
     const query = 'DELETE FROM tokens WHERE address = $1 RETURNING *';
     const result = await pool.query(query, [address]);

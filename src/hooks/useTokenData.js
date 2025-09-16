@@ -36,12 +36,9 @@ const useTokenData = () => {
         tokenList.map(address => fetchJson(`/api/token/${address}`))
       );
 
-      // Debug logging
-      console.log('API Results:', results);
 
       const successfulTokens = results
         .map((result, index) => {
-          console.log(`Token ${index} (${tokenList[index]}):`, result);
           
           if (result.status === 'fulfilled' && result.value?.code === 0) {
             return { ...result.value.data, address: tokenList[index] };

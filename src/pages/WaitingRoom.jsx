@@ -196,33 +196,36 @@ const WaitingRoom = () => {
     if (!navigator.clipboard || !window.ClipboardItem) return false;
 
     try {
+      // Request permission on some browsers
       if (navigator.permissions?.query) {
-        // Best-effort: log/prime permission state
-        await navigator.permissions.query({ name: 'clipboard-write' });
-      }
-
-      const primaryType = blob.type || 'image/png';
-      await navigator.clipboard.write([
-        new ClipboardItem({ [primaryType]: blob })
-      ]);
-      return true;
-    } catch (_) {
-      // Fallbacks
-      try {
-        await navigator.clipboard.write([
-          new ClipboardItem({ 'image/png': blob })
-        ]);
-        return true;
-      } catch (_) {
         try {
-          await navigator.clipboard.write([
-            new ClipboardItem({ 'image/jpeg': blob })
-          ]);
-          return true;
-        } catch {
-          return false;
+          const permission = await navigator.permissions.query({ name: 'clipboard-write' });
+          if (permission.state === 'denied') {
+            return false;
+          }
+        } catch (_) {
+          // Permission query failed, continue anyway
         }
       }
+
+      // Try different MIME types for better mobile compatibility
+      const mimeTypes = [blob.type || 'image/png', 'image/png', 'image/jpeg', 'image/webp'];
+      
+      for (const mimeType of mimeTypes) {
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({ [mimeType]: blob })
+          ]);
+          return true;
+        } catch (_) {
+          continue;
+        }
+      }
+      
+      return false;
+    } catch (error) {
+      console.log('Clipboard copy failed:', error);
+      return false;
     }
   };
 
@@ -240,35 +243,76 @@ const WaitingRoom = () => {
     setIsSharing(true);
     
     try {
-      // 1) Ensure image is ready
+      // 1) Create the image with price
       const priceText = `BNB $${formatPrice(bnbPrice)}`;
       const blob = await createShareBlob(priceText);
 
-      // 2) Try to copy image
-      const copied = await copyImageToClipboard(blob);
-      
-      // 3) Show appropriate message
-      if (copied) {
-        alert('Image copied. Open X and paste it into your tweet.');
-      } else {
-        alert('Could not copy automatically. When X opens, paste if available or attach the image.');
-      }
-
-      // 4) Open composer
-      const text = `BNB is at $${formatPrice(bnbPrice)}! 🚀\nWaiting for $1000! 🚀\n\nWaiting Room: bnb.palu.meme\n#BNB #BNBChain #Crypto #ToTheMoon`;
-      
+      // 2) Detect mobile device
+      const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
                     (/Macintosh/.test(navigator.userAgent) && 'ontouchend' in document);
+      const isAndroid = /Android/i.test(navigator.userAgent);
+
+      // 3) For mobile devices, try to copy image first
+      if (isMobile) {
+        const copied = await copyImageToClipboard(blob);
+        
+        if (copied) {
+          // Show success message with instructions
+          alert('✅ Image copied to clipboard!\n\nNow opening X app...\n\nOnce X opens, tap the compose button and paste the image (long press in the text area and select "Paste").');
+        } else {
+          // Fallback: try to download the image
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `bnb-price-${formatPrice(bnbPrice).replace('.', '-')}.png`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          
+          alert('📱 Image saved to your device!\n\nNow opening X app...\n\nOnce X opens, attach the saved image from your gallery.');
+        }
+      }
+
+      // 4) Prepare tweet text
+      const text = `BNB is at $${formatPrice(bnbPrice)}! 🚀\nWaiting for $1000! 🚀\n\nWaiting Room: bnb.palu.meme\n#BNB #BNBChain #Crypto #ToTheMoon`;
       
-      if (isIOS) {
-        openTwitterDeepLink(text);
+      // 5) Open X app with appropriate method
+      if (isMobile) {
+        // For mobile, try deep link first, then fallback to web
+        if (isIOS) {
+          try {
+            openTwitterDeepLink(text);
+            // Fallback after 2 seconds if deep link doesn't work
+            setTimeout(() => {
+              openTwitterIntent(text);
+            }, 2000);
+          } catch {
+            openTwitterIntent(text);
+          }
+        } else if (isAndroid) {
+          // For Android, try deep link
+          try {
+            window.location.href = `twitter://post?message=${encodeURIComponent(text)}`;
+            // Fallback after 2 seconds
+            setTimeout(() => {
+              openTwitterIntent(text);
+            }, 2000);
+          } catch {
+            openTwitterIntent(text);
+          }
+        } else {
+          openTwitterIntent(text);
+        }
       } else {
+        // For desktop, just open web version
         openTwitterIntent(text);
       }
       
     } catch (error) {
       console.error('Share failed:', error);
-      alert('Failed to share. Please try again.');
+      alert('❌ Failed to share. Please try again or manually save and share the image.');
     } finally {
       setIsSharing(false);
     }
