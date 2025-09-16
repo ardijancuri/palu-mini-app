@@ -193,38 +193,59 @@ const WaitingRoom = () => {
   };
 
   const copyImageToClipboard = async (blob) => {
-    if (!navigator.clipboard || !window.ClipboardItem) return false;
+    // Check if clipboard API is available
+    if (!navigator.clipboard || !window.ClipboardItem) {
+      console.log('Clipboard API not available');
+      return false;
+    }
 
     try {
-      // Request permission on some browsers
+      // Request clipboard permission (mobile browsers often require this)
       if (navigator.permissions?.query) {
         try {
           const permission = await navigator.permissions.query({ name: 'clipboard-write' });
-          if (permission.state === 'denied') {
-            return false;
-          }
-        } catch (_) {
-          // Permission query failed, continue anyway
+          console.log('Clipboard permission:', permission.state);
+        } catch (e) {
+          console.log('Permission query failed:', e);
         }
       }
 
       // Try different MIME types for better mobile compatibility
-      const mimeTypes = [blob.type || 'image/png', 'image/png', 'image/jpeg', 'image/webp'];
-      
+      const mimeTypes = [
+        blob.type || 'image/png',
+        'image/png',
+        'image/jpeg',
+        'image/webp'
+      ];
+
       for (const mimeType of mimeTypes) {
         try {
+          console.log(`Trying to copy with MIME type: ${mimeType}`);
           await navigator.clipboard.write([
             new ClipboardItem({ [mimeType]: blob })
           ]);
+          console.log('Successfully copied to clipboard');
           return true;
-        } catch (_) {
+        } catch (error) {
+          console.log(`Failed with ${mimeType}:`, error.message);
           continue;
         }
       }
-      
-      return false;
+
+      // Final fallback: try with a fresh blob
+      try {
+        const freshBlob = new Blob([blob], { type: 'image/png' });
+        await navigator.clipboard.write([
+          new ClipboardItem({ 'image/png': freshBlob })
+        ]);
+        console.log('Successfully copied with fresh blob');
+        return true;
+      } catch (error) {
+        console.log('Final fallback failed:', error.message);
+        return false;
+      }
     } catch (error) {
-      console.log('Clipboard copy failed:', error);
+      console.error('Clipboard copy failed:', error);
       return false;
     }
   };
@@ -243,76 +264,80 @@ const WaitingRoom = () => {
     setIsSharing(true);
     
     try {
-      // 1) Create the image with price
+      // 1) Ensure image is ready
       const priceText = `BNB $${formatPrice(bnbPrice)}`;
       const blob = await createShareBlob(priceText);
 
-      // 2) Detect mobile device
+      // 2) Detect mobile platform
       const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
                     (/Macintosh/.test(navigator.userAgent) && 'ontouchend' in document);
       const isAndroid = /Android/i.test(navigator.userAgent);
 
-      // 3) For mobile devices, try to copy image first
+      // 3) Mobile-specific sharing approach
       if (isMobile) {
+        // For mobile, try to copy image first, then redirect
         const copied = await copyImageToClipboard(blob);
         
         if (copied) {
           // Show success message with instructions
-          alert('✅ Image copied to clipboard!\n\nNow opening X app...\n\nOnce X opens, tap the compose button and paste the image (long press in the text area and select "Paste").');
+          alert('✅ Image copied to clipboard!\n\nNow opening X app...\n\nOnce X opens, tap the compose button and paste the image (long press in text area → Paste)');
+          
+          // Small delay to ensure clipboard is set
+          setTimeout(() => {
+            const text = `BNB is at $${formatPrice(bnbPrice)}! 🚀\nWaiting for $1000! 🚀\n\nWaiting Room: bnb.palu.meme\n#BNB #BNBChain #Crypto #ToTheMoon`;
+            
+            if (isIOS) {
+              openTwitterDeepLink(text);
+            } else if (isAndroid) {
+              // Try deep link first, fallback to web
+              try {
+                openTwitterDeepLink(text);
+                // Fallback after 2 seconds if deep link doesn't work
+                setTimeout(() => {
+                  openTwitterIntent(text);
+                }, 2000);
+              } catch {
+                openTwitterIntent(text);
+              }
+            } else {
+              openTwitterIntent(text);
+            }
+          }, 500);
         } else {
-          // Fallback: try to download the image
+          // Fallback: download image and open X
+          alert('📱 Mobile sharing:\n\n1. Image will be downloaded\n2. X app will open\n3. Attach the downloaded image to your tweet');
+          
+          // Download the image
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `bnb-price-${formatPrice(bnbPrice).replace('.', '-')}.png`;
+          a.download = `bnb-price-${formatPrice(bnbPrice)}.png`;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
           URL.revokeObjectURL(url);
           
-          alert('📱 Image saved to your device!\n\nNow opening X app...\n\nOnce X opens, attach the saved image from your gallery.');
-        }
-      }
-
-      // 4) Prepare tweet text
-      const text = `BNB is at $${formatPrice(bnbPrice)}! 🚀\nWaiting for $1000! 🚀\n\nWaiting Room: bnb.palu.meme\n#BNB #BNBChain #Crypto #ToTheMoon`;
-      
-      // 5) Open X app with appropriate method
-      if (isMobile) {
-        // For mobile, try deep link first, then fallback to web
-        if (isIOS) {
-          try {
-            openTwitterDeepLink(text);
-            // Fallback after 2 seconds if deep link doesn't work
-            setTimeout(() => {
+          // Open X after download
+          setTimeout(() => {
+            const text = `BNB is at $${formatPrice(bnbPrice)}! 🚀\nWaiting for $1000! 🚀\n\nWaiting Room: bnb.palu.meme\n#BNB #BNBChain #Crypto #ToTheMoon`;
+            
+            if (isIOS) {
+              openTwitterDeepLink(text);
+            } else {
               openTwitterIntent(text);
-            }, 2000);
-          } catch {
-            openTwitterIntent(text);
-          }
-        } else if (isAndroid) {
-          // For Android, try deep link
-          try {
-            window.location.href = `twitter://post?message=${encodeURIComponent(text)}`;
-            // Fallback after 2 seconds
-            setTimeout(() => {
-              openTwitterIntent(text);
-            }, 2000);
-          } catch {
-            openTwitterIntent(text);
-          }
-        } else {
-          openTwitterIntent(text);
+            }
+          }, 1000);
         }
       } else {
-        // For desktop, just open web version
+        // Desktop: use web intent (no clipboard needed)
+        const text = `BNB is at $${formatPrice(bnbPrice)}! 🚀\nWaiting for $1000! 🚀\n\nWaiting Room: bnb.palu.meme\n#BNB #BNBChain #Crypto #ToTheMoon`;
         openTwitterIntent(text);
       }
       
     } catch (error) {
       console.error('Share failed:', error);
-      alert('❌ Failed to share. Please try again or manually save and share the image.');
+      alert('Failed to share. Please try again.');
     } finally {
       setIsSharing(false);
     }
