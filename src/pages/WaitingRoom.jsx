@@ -7,6 +7,7 @@ const WaitingRoom = () => {
   const [error, setError] = useState(null);
   const [isSharing, setIsSharing] = useState(false);
   const [isChatMinimized, setIsChatMinimized] = useState(true);
+  const [shareBlob, setShareBlob] = useState(null);
   const waitingRoomRef = useRef(null);
 
   useEffect(() => {
@@ -144,9 +145,8 @@ const WaitingRoom = () => {
       const randomImage = Math.random() < 0.5 ? 'palu-price-1.png' : 'palu-price-2.png';
       console.log('Selected background image:', randomImage);
       
-      // Load the background image
+      // Load the background image (same-origin)
       const bg = new Image();
-      bg.crossOrigin = 'anonymous';
       
       await new Promise((resolve, reject) => {
         bg.onload = resolve;
@@ -185,12 +185,28 @@ const WaitingRoom = () => {
       
       console.log('Image blob created successfully');
       return blob;
-      
+
     } catch (error) {
       console.error('Image creation failed:', error);
       throw error;
     }
   };
+
+  // Pre-generate image blob when price updates to keep clipboard call within iOS gesture window
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        if (!bnbPrice || loading || error) return;
+        const priceText = `BNB $${formatPrice(bnbPrice)}`;
+        const blob = await createShareBlob(priceText);
+        if (!cancelled) setShareBlob(blob);
+      } catch (e) {
+        if (!cancelled) setShareBlob(null);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [bnbPrice, loading, error]);
 
   const getPlatform = () => {
     const ua = navigator.userAgent || '';
@@ -294,7 +310,7 @@ Waiting for $1000!
 
 Waiting Room: bnb.palu.meme
 #BNB #BNBChain #Crypto #ToTheMoon`;
-      const blob = await createShareBlob(priceText);
+      const blob = shareBlob || await createShareBlob(priceText);
 
       const copied = await copyImageToClipboard(blob);
 
@@ -306,7 +322,8 @@ Waiting Room: bnb.palu.meme
 
       const platform = getPlatform();
       if (platform === 'ios') {
-        openTwitterDeepLink(shareText);
+        // Give the clipboard microtask queue a tick before switching apps on iOS
+        setTimeout(() => openTwitterDeepLink(shareText), 0);
       } else {
         openTwitterIntent(shareText);
       }
@@ -372,5 +389,3 @@ Waiting Room: bnb.palu.meme
 };
 
 export default WaitingRoom;
-
-
