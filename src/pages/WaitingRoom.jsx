@@ -302,30 +302,52 @@ const WaitingRoom = () => {
   };
 
   const attemptOpenXIOS = (text) => {
-    const deep = `twitter://post?message=${encodeURIComponent(text)}`;
-    const web = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+    // Try multiple deep-link formats that X/Twitter apps have supported
+    const schemes = [
+      `twitter://post?message=${encodeURIComponent(text)}`,
+      `twitter://compose?text=${encodeURIComponent(text)}`,
+      `x://post?text=${encodeURIComponent(text)}`,
+      `x://compose?text=${encodeURIComponent(text)}`,
+      `twitter://` // generic open
+    ];
 
-    // Use a clickable anchor to preserve navigation behavior on iOS
-    const a = document.createElement('a');
-    a.href = deep;
-    a.rel = 'noopener';
-    a.style.display = 'none';
-    document.body.appendChild(a);
-
-    // Fallback to web intent if app didn't open (page stayed visible)
-    const fallback = setTimeout(() => {
-      if (document.visibilityState === 'visible') {
-        window.location.href = web;
+    const tryScheme = (index) => {
+      if (index >= schemes.length) {
+        // Do not fall back to browser per request; show a small hint instead
+        showShareNotice('If not prompted, switch to the X app and paste.');
+        return;
       }
-      document.body.removeChild(a);
-    }, 1200);
 
-    try {
-      a.click();
-    } finally {
-      // If navigation succeeds, page typically becomes hidden; fallback won't trigger
-      // If it fails, the timer will open the web intent
-    }
+      const url = schemes[index];
+
+      // Create a hidden anchor and also set location to maximize chances
+      const a = document.createElement('a');
+      a.href = url;
+      a.rel = 'noopener';
+      a.style.display = 'none';
+      document.body.appendChild(a);
+
+      // If page stays visible, try next scheme after a short delay
+      const t = setTimeout(() => {
+        if (document.visibilityState === 'visible') {
+          document.body.removeChild(a);
+          tryScheme(index + 1);
+        } else {
+          // Navigated to app; clean up
+          document.body.removeChild(a);
+        }
+      }, 1200);
+
+      try {
+        // Some iOS versions prefer direct assignment; others prefer a click
+        window.location.href = url;
+        a.click();
+      } catch (_) {
+        // Ignore and let the timeout advance
+      }
+    };
+
+    tryScheme(0);
   };
 
   const showShareNotice = (message, ms = 1800) => {
