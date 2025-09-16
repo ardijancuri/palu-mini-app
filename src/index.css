@@ -1783,3 +1783,25 @@ button[type="submit"] {
 .message-input:disabled::placeholder {
   color: rgba(189, 189, 189, 0.5);
 }
+/* Share toast notice (non-intrusive overlay) */
+.share-notice {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  background: rgba(17, 17, 17, 0.92);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  line-height: 1;
+  z-index: 9999;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  pointer-events: none;
+}
+@media (prefers-color-scheme: light) {
+  .share-notice {
+    background: rgba(0, 0, 0, 0.88);
+    color: #fff;
+  }
+}
