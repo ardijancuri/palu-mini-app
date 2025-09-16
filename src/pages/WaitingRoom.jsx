@@ -200,6 +200,10 @@ const WaitingRoom = () => {
     /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
   const copyImageToClipboard = async (blob) => {
+    if (!blob) {
+      return false;
+    }
+
     const clipboard = navigator.clipboard;
     const ClipboardItemCtor =
       typeof window !== 'undefined'
@@ -207,18 +211,13 @@ const WaitingRoom = () => {
         : null;
 
     if (!clipboard?.write || !ClipboardItemCtor) {
-      return { success: false, reason: 'unsupported' };
+      return false;
     }
 
     try {
       if (navigator.permissions?.query) {
         try {
-          const permission = await navigator.permissions.query({
-            name: 'clipboard-write'
-          });
-          if (permission.state === 'denied') {
-            return { success: false, reason: 'denied' };
-          }
+          await navigator.permissions.query({ name: 'clipboard-write' });
         } catch (permissionError) {
           console.warn('Clipboard permission query failed', permissionError);
         }
@@ -234,7 +233,7 @@ const WaitingRoom = () => {
         try {
           const item = new ClipboardItemCtor({ [type]: blob });
           await clipboard.write([item]);
-          return { success: true, type };
+          return true;
         } catch (err) {
           console.warn(`Clipboard write failed for ${type}`, err);
         }
@@ -243,7 +242,7 @@ const WaitingRoom = () => {
       console.warn('Clipboard image copy failed', error);
     }
 
-    return { success: false, reason: 'error' };
+    return false;
   };
 
   const shareImageViaShareSheet = async (blob, shareText) => {
@@ -295,28 +294,24 @@ Waiting Room: bnb.palu.meme
 #BNB #BNBChain #Crypto #ToTheMoon`;
       const blob = await createShareBlob(priceText);
 
-      const clipboardResult = await copyImageToClipboard(blob);
-      let shareMethod = 'clipboard';
+      const copied = await copyImageToClipboard(blob);
 
-      if (clipboardResult.success) {
+      if (copied) {
         alert('Image copied. Open X and paste it into your tweet.');
       } else {
         const sharedViaSheet = await shareImageViaShareSheet(blob, shareText);
         if (sharedViaSheet) {
-          shareMethod = 'share-sheet';
           alert('Shared image via your device share sheet. Choose X to post with the prefilled text.');
-        } else {
-          shareMethod = 'fallback';
-          alert('Could not copy automatically. When X opens, paste if available or attach the image.');
+          return;
         }
+
+        alert('Could not copy automatically. When X opens, paste if available or attach the image.');
       }
 
-      if (shareMethod !== 'share-sheet') {
-        if (isIOSDevice()) {
-          openTwitterDeepLink(shareText);
-        } else {
-          openTwitterIntent(shareText);
-        }
+      if (isIOSDevice()) {
+        openTwitterDeepLink(shareText);
+      } else {
+        openTwitterIntent(shareText);
       }
     } catch (error) {
       console.error('Share failed:', error);
