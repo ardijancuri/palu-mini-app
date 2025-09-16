@@ -8,6 +8,7 @@ const WaitingRoom = () => {
   const [isSharing, setIsSharing] = useState(false);
   const [isChatMinimized, setIsChatMinimized] = useState(true);
   const [shareBlob, setShareBlob] = useState(null);
+  const [shareNotice, setShareNotice] = useState('');
   const waitingRoomRef = useRef(null);
 
   useEffect(() => {
@@ -297,7 +298,41 @@ const WaitingRoom = () => {
 
   const openTwitterDeepLink = (text) => {
     const deep = `twitter://post?message=${encodeURIComponent(text)}`;
-    window.location.href = deep; // Open X app composer
+    window.location.href = deep; // Attempt to open X app composer
+  };
+
+  const attemptOpenXIOS = (text) => {
+    const deep = `twitter://post?message=${encodeURIComponent(text)}`;
+    const web = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+
+    // Use a clickable anchor to preserve navigation behavior on iOS
+    const a = document.createElement('a');
+    a.href = deep;
+    a.rel = 'noopener';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+
+    // Fallback to web intent if app didn't open (page stayed visible)
+    const fallback = setTimeout(() => {
+      if (document.visibilityState === 'visible') {
+        window.location.href = web;
+      }
+      document.body.removeChild(a);
+    }, 1200);
+
+    try {
+      a.click();
+    } finally {
+      // If navigation succeeds, page typically becomes hidden; fallback won't trigger
+      // If it fails, the timer will open the web intent
+    }
+  };
+
+  const showShareNotice = (message, ms = 1800) => {
+    setShareNotice(message);
+    if (ms > 0) {
+      setTimeout(() => setShareNotice(''), ms);
+    }
   };
 
   const shareToTwitter = async () => {
@@ -315,15 +350,15 @@ Waiting Room: bnb.palu.meme
       const copied = await copyImageToClipboard(blob);
 
       if (copied) {
-        alert('Paste the price card in X.');
+        showShareNotice('Paste the price card in X');
       } else {
-        alert('Could not copy automatically. When X opens, paste if available or attach the image.');
+        showShareNotice('Could not copy automatically. When X opens, paste if available or attach the image.');
       }
 
       const platform = getPlatform();
       if (platform === 'ios') {
-        // Give the clipboard microtask queue a tick before switching apps on iOS
-        setTimeout(() => openTwitterDeepLink(shareText), 0);
+        // Try to open the X app; fall back to web intent if it doesn't open
+        attemptOpenXIOS(shareText);
       } else {
         openTwitterIntent(shareText);
       }
@@ -359,6 +394,12 @@ Waiting Room: bnb.palu.meme
                 onToggleMinimize={() => setIsChatMinimized(!isChatMinimized)}
               />
               
+              {shareNotice && (
+                <div className="share-notice">
+                  {shareNotice}
+                </div>
+              )}
+
               <div className="waiting-room-content">
         <h1 className="waiting-room-title">BNB ${formatPrice(bnbPrice)}</h1>
         {loading && <div className="loading-indicator">Loading...</div>}
