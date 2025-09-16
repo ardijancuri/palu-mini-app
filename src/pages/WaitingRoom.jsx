@@ -192,12 +192,19 @@ const WaitingRoom = () => {
     }
   };
 
-  const isIOSDevice = () =>
-    /iPhone|iPad|iPod/.test(navigator.userAgent) ||
-    (/Macintosh/.test(navigator.userAgent) && 'ontouchend' in document);
+  const getPlatform = () => {
+    const ua = navigator.userAgent || '';
 
-  const isMobileDevice = () =>
-    /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && 'ontouchend' in document)) {
+      return 'ios';
+    }
+
+    if (/Android/i.test(ua)) {
+      return 'android';
+    }
+
+    return 'desktop';
+  };
 
   const copyImageToClipboard = async (blob) => {
     if (!blob) {
@@ -245,33 +252,6 @@ const WaitingRoom = () => {
     return false;
   };
 
-  const shareImageViaShareSheet = async (blob, shareText) => {
-    if (!isMobileDevice()) {
-      return false;
-    }
-
-    if (!navigator.share || !navigator.canShare || typeof File === 'undefined') {
-      return false;
-    }
-
-    try {
-      const file = new File([blob], 'bnb-share.png', { type: 'image/png' });
-      if (!navigator.canShare({ files: [file], text: shareText })) {
-        return false;
-      }
-
-      await navigator.share({
-        files: [file],
-        text: shareText,
-        title: 'Share BNB Price'
-      });
-      return true;
-    } catch (error) {
-      console.warn('Web Share API failed or was cancelled', error);
-      return false;
-    }
-  };
-
   const openTwitterIntent = (text) => {
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
@@ -297,18 +277,13 @@ Waiting Room: bnb.palu.meme
       const copied = await copyImageToClipboard(blob);
 
       if (copied) {
-        alert('Image copied. Open X and paste it into your tweet.');
+        alert('Paste the price card in X.');
       } else {
-        const sharedViaSheet = await shareImageViaShareSheet(blob, shareText);
-        if (sharedViaSheet) {
-          alert('Shared image via your device share sheet. Choose X to post with the prefilled text.');
-          return;
-        }
-
         alert('Could not copy automatically. When X opens, paste if available or attach the image.');
       }
 
-      if (isIOSDevice()) {
+      const platform = getPlatform();
+      if (platform === 'ios') {
         openTwitterDeepLink(shareText);
       } else {
         openTwitterIntent(shareText);
