@@ -224,17 +224,39 @@ const WaitingRoom = () => {
     try {
       if (navigator.permissions?.query) {
         try {
-          await navigator.permissions.query({ name: 'clipboard-write' });
+          await navigator.permissions.query({ name: "clipboard-write" });
         } catch (permissionError) {
-          console.warn('Clipboard permission query failed', permissionError);
+          console.warn("Clipboard permission query failed", permissionError);
         }
       }
 
+      const platform = getPlatform();
+
+      // iOS: be strict, use PNG only, and also try Promise-based data for Safari
+      if (platform === "ios") {
+        try {
+          const item = new ClipboardItemCtor({ "image/png": blob });
+          await clipboard.write([item]);
+          return true;
+        } catch (err1) {
+          console.warn("iOS direct PNG clipboard write failed", err1);
+          try {
+            const item = new ClipboardItemCtor({ "image/png": Promise.resolve(blob) });
+            await clipboard.write([item]);
+            return true;
+          } catch (err2) {
+            console.warn("iOS Promise PNG clipboard write failed", err2);
+          }
+        }
+        return false;
+      }
+
+      // Desktop/Android: attempt blob's type first, then PNG/JPEG
       const preferredTypes = [];
-      if (blob.type && blob.type.startsWith('image/')) {
+      if (blob.type && blob.type.startsWith("image/")) {
         preferredTypes.push(blob.type);
       }
-      preferredTypes.push('image/png', 'image/jpeg');
+      preferredTypes.push("image/png", "image/jpeg");
 
       for (const type of preferredTypes) {
         try {
@@ -246,7 +268,7 @@ const WaitingRoom = () => {
         }
       }
     } catch (error) {
-      console.warn('Clipboard image copy failed', error);
+      console.warn("Clipboard image copy failed", error);
     }
 
     return false;
@@ -267,8 +289,8 @@ const WaitingRoom = () => {
 
     try {
       const priceText = `BNB $${formatPrice(bnbPrice)}`;
-      const shareText = `BNB is at $${formatPrice(bnbPrice)}! ??
-Waiting for $1000! ??
+      const shareText = `BNB is at $${formatPrice(bnbPrice)}!
+Waiting for $1000!
 
 Waiting Room: bnb.palu.meme
 #BNB #BNBChain #Crypto #ToTheMoon`;
