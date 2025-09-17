@@ -402,8 +402,6 @@ main {
   justify-content: center;
   height: 100%;
   width: 100%;
-  position: relative;
-  z-index: 5;
 }
 
 .waiting-room-title {
@@ -435,7 +433,6 @@ main {
 }
 
 .share-button {
-  min-width: 180px;
   padding: 1rem 2rem;
   background: #00000000;
   color: #F5C908;
@@ -1815,6 +1812,9 @@ button[type="submit"] {
 }
 
 /* Share image preset selector (top-right inside section) */
+.share-image-selector-row {
+  /* container remains for semantics; no layout impact needed */
+}
 .waiting-room-content .share-image-selector {
   position: absolute;
   top: 80px;
@@ -1946,121 +1946,32 @@ button[type="submit"] {
   color: #000000 !important;
 }
 
-/* Custom Dropdown Styles */
-.custom-dropdown {
-  position: relative;
-  display: inline-block;
-  width: 100%;
+/* Option popup styling (browser support varies) */
+.share-image-select option {
+  background-color: #0b1220; /* dark */
+  color: #000000; /* black text per request */
 }
 
-.custom-dropdown-trigger {
-  appearance: none;
-  -webkit-appearance: none;
-  background: #F5C908;
-  color: #000000;
-  border: 2px solid #F5C908;
-  border-radius: 50px;
-  padding: 1rem 2.5rem 1rem 1.25rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(245, 201, 8, 0.3);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
+/* Remove hover animation (lift/shadow) from dropdown; keep static icon */
+.share-image-select:hover {
+  transform: none !important;
+  box-shadow: none !important;
 }
 
-.custom-dropdown-trigger:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(245, 201, 8, 0.4);
-  background: #F5C908;
-  color: #000000;
-}
-
-.custom-dropdown-trigger:focus {
-  outline: none;
-}
-
-.custom-dropdown-trigger:active {
-  transform: translateY(0);
-}
-
-.custom-dropdown-value {
-  flex: 1;
-  text-align: left;
-}
-
-.custom-dropdown-arrow {
-  font-size: 0.8rem;
-  transition: transform 0.3s ease;
-  margin-left: 8px;
-}
-
-.custom-dropdown-arrow.open {
-  transform: rotate(180deg);
-}
-
-.custom-dropdown-menu {
-  max-width: 180px;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: #000000;
-  border: 2px solid #F5C908;
-  border-radius: 12px;
-  margin-top: 4px;
-  z-index: 1000;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
-}
-
-.custom-dropdown-option {
-  width: 100%;
-  background: #000000;
-  color: #F5C908;
-  border: none;
-  padding: 12px 16px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: left;
-  border-bottom: 1px solid rgba(245, 201, 8, 0.2);
-}
-
-.custom-dropdown-option:last-child {
-  border-bottom: none;
-}
-
-.custom-dropdown-option:hover,
-.custom-dropdown-option:focus {
-  background-color: #000000;
-  color: #F5C908;
-  outline: none;
-}
-
-.custom-dropdown-option.selected {
-  background-color: rgba(245, 201, 8, 0.1);
-  color: #F5C908;
-}
-
-.custom-dropdown.disabled .custom-dropdown-trigger {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.custom-dropdown.disabled .custom-dropdown-trigger:hover {
-  transform: none;
-  box-shadow: 0 4px 15px rgba(245, 201, 8, 0.3);
-}
-
-/* Custom dropdown specific styling */
-.custom-dropdown.share-image-select {
-  width: auto;
-  min-width: 150px;
+/* Fully lock dropdown icon and styles to prevent any hover animation */
+.share-image-select,
+.share-image-select:hover,
+.share-image-select:focus,
+.share-image-select:active {
+  transition: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+  background: #F5C908 !important;
+  color: #000000 !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 12 8'%3E%3Cpath fill='%23000000' d='M6 8L0 0h12z'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 18px center !important;
+  background-size: 14px 9px !important;
 }
 
 /* Share actions row (dropdown + share button) */
@@ -2069,8 +1980,6 @@ button[type="submit"] {
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  position: relative;
-  z-index: 10;
 }
 
 /* Make dropdown visually match the Share button */
@@ -2078,17 +1987,11 @@ button[type="submit"] {
 .share-image-label { color: var(--accent); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 
-/* Custom Dropdown Styles */
-.custom-dropdown {
-  position: relative;
-  display: inline-block;
-}
-
-.custom-dropdown-trigger {
+.share-image-select {
   appearance: none;
   -webkit-appearance: none;
-  background: #F5C908;
-  color: #000000;
+  background: transparent;
+  color: #F5C908;
   border: 2px solid #F5C908;
   border-radius: 50px;
   padding: 1rem 2.5rem 1rem 1.25rem;
@@ -2097,43 +2000,21 @@ button[type="submit"] {
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(245, 201, 8, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 180px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 12 8'%3E%3Cpath fill='%23F5C908' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 18px center;
+  background-size: 14px 9px;
 }
-
-.custom-dropdown-trigger:hover {
+.share-image-select:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(245, 201, 8, 0.4);
   background: #F5C908;
   color: #000000;
 }
-
-.custom-dropdown-trigger:focus {
-  outline: none;
-  border-color: #F5C908;
-  box-shadow: 0 0 0 3px rgba(245, 201, 8, 0.25);
-}
-
-.custom-dropdown-trigger:active {
-  transform: translateY(0);
-}
-
-.custom-dropdown-value {
-  flex: 1;
-  text-align: left;
-}
-
-.custom-dropdown-arrow {
-  transition: transform 0.3s ease;
-  font-size: 0.8rem;
-  margin-left: 8px;
-}
-
+.share-image-select:focus { outline: none; }
+.share-image-select:active { transform: translateY(0); }
 
 @media (max-width: 600px) {
   .share-actions { flex-direction: column; gap: 12px; }
   .share-image-select { width: 100%; max-width: 280px; text-align: left; }
 }
-

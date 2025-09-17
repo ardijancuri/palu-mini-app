@@ -1,5 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import captainBNBImg from '../assets/CAPTAINBNBPRICE.jpg';
+import captainBNBImg1 from '../assets/captainbnb1.jpg';
+import captainBNBImg2 from '../assets/captainbnb2.jpg';
+import captainBNBImg3 from '../assets/captainbnb3.jpg';
 import Chat from '../components/Chat';
+import CustomDropdown from '../components/CustomDropdown';
 
 const WaitingRoom = () => {
   const [bnbPrice, setBnbPrice] = useState(null);
@@ -9,7 +15,10 @@ const WaitingRoom = () => {
   const [isChatMinimized, setIsChatMinimized] = useState(true);
   const [shareBlob, setShareBlob] = useState(null);
   const [shareNotice, setShareNotice] = useState('');
+  const [sharePreset, setSharePreset] = useState('BNB'); // 'BNB' | 'CaptainBNB'
   const waitingRoomRef = useRef(null);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     let ws = null;
@@ -142,9 +151,19 @@ const WaitingRoom = () => {
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
       
-      // Randomly choose between palu-price-1.png and palu-price-2.png (50% chance each)
-      const randomImage = Math.random() < 0.5 ? 'palu-price-1.png' : 'palu-price-2.png';
-      console.log('Selected background image:', randomImage);
+      // Choose background image based on selected preset
+      let bgSrc;
+      if (sharePreset === 'CaptainBNB') {
+        // Randomly select from the three CaptainBNB images with equal probability
+        const captainBNBImages = [captainBNBImg1, captainBNBImg2, captainBNBImg3];
+        const randomIndex = Math.floor(Math.random() * captainBNBImages.length);
+        bgSrc = captainBNBImages[randomIndex];
+        console.log(`Selected CaptainBNB image ${randomIndex + 1}`);
+      } else {
+        const randomImage = Math.random() < 0.5 ? 'palu-price-1.png' : 'palu-price-2.png';
+        bgSrc = `/assets/${randomImage}`;
+        console.log('Selected background image:', randomImage);
+      }
       
       // Load the background image (same-origin)
       const bg = new Image();
@@ -152,7 +171,7 @@ const WaitingRoom = () => {
       await new Promise((resolve, reject) => {
         bg.onload = resolve;
         bg.onerror = () => reject(new Error('Failed to load background'));
-        bg.src = `/assets/${randomImage}`;
+        bg.src = bgSrc;
       });
       
       // Draw the background image
@@ -207,7 +226,31 @@ const WaitingRoom = () => {
       }
     })();
     return () => { cancelled = true; };
-  }, [bnbPrice, loading, error]);
+  }, [bnbPrice, loading, error, sharePreset]);
+
+  // Sync preset with URL query (?card=BNB|CaptainBNB), case-insensitive
+  useEffect(() => {
+    const params = new URLSearchParams(location.search || '');
+    const raw = params.get('card');
+    if (!raw) return;
+    const val = String(raw).toLowerCase();
+    const normalized = val === 'captainbnb' ? 'CaptainBNB' : val === 'bnb' ? 'BNB' : null;
+    if (normalized && normalized !== sharePreset) {
+      setSharePreset(normalized);
+    }
+  }, [location.search]);
+
+  // Update URL when preset changes so links are shareable
+  useEffect(() => {
+    const params = new URLSearchParams(location.search || '');
+    const current = params.get('card');
+    const desired = sharePreset;
+    if (current !== desired) {
+      params.set('card', desired);
+      navigate({ search: `?${params.toString()}` }, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sharePreset]);
 
   const getPlatform = () => {
     const ua = navigator.userAgent || '';
@@ -327,8 +370,8 @@ const WaitingRoom = () => {
 
     try {
       const priceText = `BNB $${formatPrice(bnbPrice)}`;
-      const shareText = `BNB is at $${formatPrice(bnbPrice)}!
-Waiting for $1000!
+      const shareText = `BNB is at $${formatPrice(bnbPrice)}! 🚀
+Waiting for $1000! 🚀
 
 Waiting Room: bnb.palu.meme
 #BNB #BNBChain #Crypto #ToTheMoon`;
@@ -380,7 +423,7 @@ Waiting Room: bnb.palu.meme
                 isMinimized={isChatMinimized}
                 onToggleMinimize={() => setIsChatMinimized(!isChatMinimized)}
               />
-              
+
               {shareNotice && (
                 <div className="share-notice" aria-live="polite" role="status">
                   {shareNotice}
@@ -393,23 +436,34 @@ Waiting Room: bnb.palu.meme
         {error && <div className="error-indicator">{error}</div>}
         
          {!loading && !error && bnbPrice && (
-           <button 
-             className="share-button"
-             onClick={shareToTwitter}
-             disabled={isSharing}
-           >
-             {isSharing ? (
-               <>
-                 <i className="fas fa-spinner fa-spin"></i>
-                 Sharing...
-               </>
-             ) : (
-               <>
-                 <i className="fab fa-x-twitter"></i>
-                 Share on X
-               </>
-             )}
-           </button>
+           <div className="share-actions">
+             <button 
+               className="share-button"
+               onClick={shareToTwitter}
+               disabled={isSharing}
+             >
+               {isSharing ? (
+                 <>
+                   <i className="fas fa-spinner fa-spin"></i>
+                   Sharing...
+                 </>
+               ) : (
+                 <>
+                   <i className="fab fa-x-twitter"></i>
+                   Share on X
+                 </>
+               )}
+             </button>
+             <CustomDropdown
+               options={[
+                 { value: 'BNB', label: 'BNB' },
+                 { value: 'CaptainBNB', label: 'CaptainBNB' }
+               ]}
+               value={sharePreset}
+               onChange={(value) => setSharePreset(value)}
+               className="share-image-select"
+             />
+           </div>
          )}
       </div>
     </div>
