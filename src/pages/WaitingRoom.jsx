@@ -6,6 +6,7 @@ import captainBNBImg2 from '../assets/captainbnb2.jpg';
 import captainBNBImg3 from '../assets/captainbnb3.jpg';
 import cliffordImg1 from '../assets/clifford1.jpg';
 import cliffordImg2 from '../assets/clifford2.jpg';
+import cliffordImg3 from '../assets/clifford3.jpg';
 import Chat from '../components/Chat';
 import CustomDropdown from '../components/CustomDropdown';
 
@@ -170,8 +171,8 @@ const WaitingRoom = () => {
         bgSrc = captainBNBImages[randomIndex];
         console.log(`Selected CaptainBNB image ${randomIndex + 1}`);
       } else if (sharePreset === 'Clifford') {
-        // Randomly select from the two Clifford images with equal probability
-        const cliffordImages = [cliffordImg1, cliffordImg2];
+        // Randomly select from the three Clifford images with equal probability
+        const cliffordImages = [cliffordImg1, cliffordImg2, cliffordImg3];
         const randomIndex = Math.floor(Math.random() * cliffordImages.length);
         bgSrc = cliffordImages[randomIndex];
         console.log(`Selected Clifford image ${randomIndex + 1}`);
