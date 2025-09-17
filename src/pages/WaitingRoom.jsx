@@ -4,6 +4,8 @@ import captainBNBImg from '../assets/CAPTAINBNBPRICE.jpg';
 import captainBNBImg1 from '../assets/captainbnb1.jpg';
 import captainBNBImg2 from '../assets/captainbnb2.jpg';
 import captainBNBImg3 from '../assets/captainbnb3.jpg';
+import cliffordImg1 from '../assets/clifford1.jpg';
+import cliffordImg2 from '../assets/clifford2.jpg';
 import Chat from '../components/Chat';
 import CustomDropdown from '../components/CustomDropdown';
 
@@ -15,7 +17,7 @@ const WaitingRoom = () => {
   const [isChatMinimized, setIsChatMinimized] = useState(true);
   const [shareBlob, setShareBlob] = useState(null);
   const [shareNotice, setShareNotice] = useState('');
-  const [sharePreset, setSharePreset] = useState('BNB'); // 'BNB' | 'CaptainBNB'
+  const [sharePreset, setSharePreset] = useState('BNB'); // 'BNB' | 'CaptainBNB' | 'Clifford'
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const waitingRoomRef = useRef(null);
   const location = useLocation();
@@ -167,6 +169,12 @@ const WaitingRoom = () => {
         const randomIndex = Math.floor(Math.random() * captainBNBImages.length);
         bgSrc = captainBNBImages[randomIndex];
         console.log(`Selected CaptainBNB image ${randomIndex + 1}`);
+      } else if (sharePreset === 'Clifford') {
+        // Randomly select from the two Clifford images with equal probability
+        const cliffordImages = [cliffordImg1, cliffordImg2];
+        const randomIndex = Math.floor(Math.random() * cliffordImages.length);
+        bgSrc = cliffordImages[randomIndex];
+        console.log(`Selected Clifford image ${randomIndex + 1}`);
       } else {
         const randomImage = Math.random() < 0.5 ? 'palu-price-1.png' : 'palu-price-2.png';
         bgSrc = `/assets/${randomImage}`;
@@ -246,7 +254,7 @@ const WaitingRoom = () => {
       return;
     }
     const val = String(raw).toLowerCase();
-    const normalized = val === 'captainbnb' ? 'CaptainBNB' : val === 'bnb' ? 'BNB' : null;
+    const normalized = val === 'captainbnb' ? 'CaptainBNB' : val === 'bnb' ? 'BNB' : val === 'clifford' ? 'Clifford' : null;
     console.log(`URL parameter processing: ${raw} -> ${val} -> ${normalized}`);
     if (normalized) {
       console.log(`Setting sharePreset to: ${normalized}`);
@@ -479,7 +487,8 @@ Waiting Room: bnb.palu.meme
              <CustomDropdown
                options={[
                  { value: 'BNB', label: 'BNB' },
-                 { value: 'CaptainBNB', label: 'CaptainBNB' }
+                 { value: 'CaptainBNB', label: 'CaptainBNB' },
+                 { value: 'Clifford', label: 'Clifford' }
                ]}
                value={sharePreset}
                onChange={(value) => setSharePreset(value)}
