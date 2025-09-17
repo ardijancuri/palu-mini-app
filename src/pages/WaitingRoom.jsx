@@ -137,6 +137,13 @@ const WaitingRoom = () => {
     return Math.floor(price).toString();
   };
 
+  const formatPriceWithDecimals = (price) => {
+    if (!price) return '0';
+    const formatted = price.toFixed(2);
+    const [integerPart, decimalPart] = formatted.split('.');
+    return { integerPart, decimalPart };
+  };
+
   const createShareBlob = async (priceText) => {
     try {
       console.log('Starting image creation...');
@@ -431,7 +438,10 @@ Waiting Room: bnb.palu.meme
               )}
 
               <div className="waiting-room-content">
-        <h1 className="waiting-room-title">BNB ${formatPrice(bnbPrice)}</h1>
+        <h1 className="waiting-room-title">
+          BNB ${formatPriceWithDecimals(bnbPrice).integerPart}
+          <span className="price-decimals">.{formatPriceWithDecimals(bnbPrice).decimalPart}</span>
+        </h1>
         {loading && <div className="loading-indicator">Loading...</div>}
         {error && <div className="error-indicator">{error}</div>}
         

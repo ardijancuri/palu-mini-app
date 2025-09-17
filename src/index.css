@@ -420,6 +420,13 @@ main {
   position: relative;
 }
 
+.price-decimals {
+  color: #b6b6b6;
+  font-size: 0.4em;
+  font-weight: 400;
+  text-shadow: 0 0 10px rgba(172, 171, 171, 0.219);
+}
+
 .loading-indicator {
   margin-top: 1rem;
   color: var(--muted);
