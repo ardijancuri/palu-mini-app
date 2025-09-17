@@ -16,6 +16,7 @@ const WaitingRoom = () => {
   const [shareBlob, setShareBlob] = useState(null);
   const [shareNotice, setShareNotice] = useState('');
   const [sharePreset, setSharePreset] = useState('BNB'); // 'BNB' | 'CaptainBNB'
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const waitingRoomRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -239,25 +240,36 @@ const WaitingRoom = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search || '');
     const raw = params.get('card');
-    if (!raw) return;
+    console.log('URL search params:', location.search, 'raw card value:', raw);
+    if (!raw) {
+      setIsInitialLoad(false);
+      return;
+    }
     const val = String(raw).toLowerCase();
     const normalized = val === 'captainbnb' ? 'CaptainBNB' : val === 'bnb' ? 'BNB' : null;
-    if (normalized && normalized !== sharePreset) {
+    console.log(`URL parameter processing: ${raw} -> ${val} -> ${normalized}`);
+    if (normalized) {
+      console.log(`Setting sharePreset to: ${normalized}`);
       setSharePreset(normalized);
     }
+    setIsInitialLoad(false);
   }, [location.search]);
 
-  // Update URL when preset changes so links are shareable
+  // Update URL when preset changes so links are shareable (but not during initial load)
   useEffect(() => {
+    if (isInitialLoad) return; // Don't update URL during initial load
+    
     const params = new URLSearchParams(location.search || '');
     const current = params.get('card');
     const desired = sharePreset;
+    
     if (current !== desired) {
+      console.log(`Updating URL: ${current} -> ${desired}`);
       params.set('card', desired);
       navigate({ search: `?${params.toString()}` }, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sharePreset]);
+  }, [sharePreset, isInitialLoad]);
 
   const getPlatform = () => {
     const ua = navigator.userAgent || '';
