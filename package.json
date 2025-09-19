@@ -12,6 +12,7 @@
     "server": "node server/server.js",
     "dev:full": "concurrently \"npm run dev:frontend\" \"npm run server\"",
     "db:setup": "psql -U $DB_USER -d $DB_NAME -f server/config/schema.sql",
+    "db:init-tokens": "node scripts/initialize-tokens.js",
     "vercel-build": "vite build"
   },
   "dependencies": {

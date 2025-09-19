@@ -87,8 +87,8 @@ const Community = () => {
     <>
       <div className="header">
         <div className="header-left">
-          <h1>Community Tokens</h1>
-          <div className="small">Community-driven token discovery</div>
+          <h1>Four Meme - 2nd Batch Listed Tokens</h1>
+          <div className="small">Real-time token data</div>
           <div className="likes-counter">
             <span className="likes-used">Likes used: {sessionLikesUsed}/3</span>
             <span className="likes-remaining">Remaining: {sessionLikesRemaining}</span>

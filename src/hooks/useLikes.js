@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 
 const useLikes = () => {
   const [likesData, setLikesData] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [sessionLikes, setSessionLikes] = useState([]);
+  const location = useLocation();
 
   const fetchJson = async (url, options = {}) => {
     const res = await fetch(url, options);
@@ -17,8 +19,9 @@ const useLikes = () => {
     setError(null);
     
     try {
-      // Load session likes from localStorage
-      const savedSessionLikes = JSON.parse(localStorage.getItem('sessionLikes') || '[]');
+      // Load session likes from localStorage (page-specific)
+      const pageKey = `sessionLikes_${location.pathname}`;
+      const savedSessionLikes = JSON.parse(localStorage.getItem(pageKey) || '[]');
       setSessionLikes(savedSessionLikes);
       
       const response = await fetchJson('/api/tokens');
@@ -37,7 +40,7 @@ const useLikes = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [location.pathname]);
 
   const checkUserLikeStatus = useCallback(async (address) => {
     // No longer checking if user has liked - always allow new likes
@@ -77,10 +80,11 @@ const useLikes = () => {
       });
 
       if (response.success) {
-        // Add to session likes
+        // Add to session likes (page-specific)
         const newSessionLikes = [...sessionLikes, address];
         setSessionLikes(newSessionLikes);
-        localStorage.setItem('sessionLikes', JSON.stringify(newSessionLikes));
+        const pageKey = `sessionLikes_${location.pathname}`;
+        localStorage.setItem(pageKey, JSON.stringify(newSessionLikes));
         
         setLikesData(prev => ({
           ...prev,
@@ -95,7 +99,7 @@ const useLikes = () => {
       console.error('Error adding like:', err);
       throw err;
     }
-  }, [sessionLikes]);
+  }, [sessionLikes, location.pathname]);
 
   const getLikeCount = useCallback((address) => {
     return likesData[address]?.likeCount || 0;

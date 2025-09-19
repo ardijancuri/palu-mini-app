@@ -26,10 +26,16 @@ const Header = () => {
               Waiting Room
             </Link>
             <Link 
-              to="/dashboard" 
-              className={`nav-link ${location.pathname === '/dashboard' ? 'active' : ''}`}
+              to="/1st-batch" 
+              className={`nav-link ${location.pathname === '/1st-batch' ? 'active' : ''}`}
             >
-              Dashboard
+              1st Batch
+            </Link>
+            <Link 
+              to="/2nd-batch" 
+              className={`nav-link ${location.pathname === '/2nd-batch' ? 'active' : ''}`}
+            >
+              2nd Batch
             </Link>
             <Link 
               to="/community" 
@@ -66,11 +72,18 @@ const Header = () => {
               Waiting Room
             </Link>
             <Link 
-              to="/dashboard" 
-              className={`nav-link ${location.pathname === '/dashboard' ? 'active' : ''}`}
+              to="/1st-batch" 
+              className={`nav-link ${location.pathname === '/1st-batch' ? 'active' : ''}`}
               onClick={() => setIsMenuOpen(false)}
             >
-              Dashboard
+              1st Batch
+            </Link>
+            <Link 
+              to="/2nd-batch" 
+              className={`nav-link ${location.pathname === '/2nd-batch' ? 'active' : ''}`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              2nd Batch
             </Link>
             <Link 
               to="/community" 

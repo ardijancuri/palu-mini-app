@@ -78,7 +78,7 @@ const Dashboard = () => {
     <>
       <div className="header">
         <div className="header-left">
-          <h1>Four Meme Listed Tokens</h1>
+          <h1>Four Meme - 1st Batch Listed Tokens</h1>
           <div className="small">Real-time token data</div>
           <div className="likes-counter">
             <span className="likes-used">Likes used: {sessionLikesUsed}/3</span>

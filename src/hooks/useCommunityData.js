@@ -24,7 +24,6 @@ const useCommunityData = () => {
         '0x380bf199b3173cf7b3b321848ae1c5014a124444',
         '0x27B02Bc573023e0173854ff64b7beaf8A3c04444',
         '0x36765928c3d4aBf286f2B67120C093c26a284444',
-        '0xb75a7e8876df49a74cc4c76c6bda161a8ea4b483'
       ];
 
       // Load community token list from localStorage or use default
