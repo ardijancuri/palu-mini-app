@@ -23,7 +23,7 @@ const Header = () => {
               to="/" 
               className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}
             >
-              Waiting Room
+              BNB Price Card
             </Link>
             <Link 
               to="/1st-batch" 
@@ -69,7 +69,7 @@ const Header = () => {
               className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}
               onClick={() => setIsMenuOpen(false)}
             >
-              Waiting Room
+              BNB Price Card
             </Link>
             <Link 
               to="/1st-batch" 

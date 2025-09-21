@@ -399,9 +399,10 @@ const WaitingRoom = () => {
     try {
       const priceText = `BNB $${formatPrice(bnbPrice)}`;
       const shareText = `BNB is at $${formatPrice(bnbPrice)}! 🚀
-Waiting for $1000! 🚀
 
-Waiting Room: bnb.palu.meme
+Generate your price card at:
+bnb.palu.meme
+
 #BNB #BNBChain #Crypto #ToTheMoon`;
       const blob = shareBlob || await createShareBlob(priceText);
 
