@@ -6,6 +6,8 @@ import './Dashboard.css';
 
 const Dashboard = () => {
   const [sortBy, setSortBy] = useState('marketCap');
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [animationType, setAnimationType] = useState('');
   const { tokens, loading, error, loadTokens } = useTokenData();
   const { 
     getSessionLikesCount, 
@@ -21,7 +23,21 @@ const Dashboard = () => {
   }, [loadTokens]);
 
   const handleSort = (newSortBy) => {
-    setSortBy(newSortBy);
+    if (isAnimating) return; // Prevent multiple animations
+    
+    setAnimationType('upvotes-sort');
+    setIsAnimating(true);
+    
+    // Start animation
+    setTimeout(() => {
+      setSortBy(newSortBy);
+    }, 100);
+    
+    // End animation after duration
+    setTimeout(() => {
+      setIsAnimating(false);
+      setAnimationType('');
+    }, 900);
   };
 
   const sortTokens = (tokens, sortBy) => {
@@ -116,18 +132,22 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="grid">
+      <div className={`grid ${isAnimating ? 'sorting' : ''}`}>
         {sortedTokens.map((token, index) => (
-          <TokenCard 
-            key={token?.address || index} 
-            token={token} 
-            index={index}
-            sortBy={sortBy}
-            getLikeCount={getLikeCount}
-            addLike={addLike}
-            hasLiked={hasLiked}
-            canLike={canLike}
-          />
+          <div 
+            key={token?.address || index}
+            className={`token-card-animated ${isAnimating && index < 3 ? animationType : ''}`}
+          >
+            <TokenCard 
+              token={token} 
+              index={index}
+              sortBy={sortBy}
+              getLikeCount={getLikeCount}
+              addLike={addLike}
+              hasLiked={hasLiked}
+              canLike={canLike}
+            />
+          </div>
         ))}
       </div>
     </>

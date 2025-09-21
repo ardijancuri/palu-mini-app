@@ -122,6 +122,50 @@
   gap: 12px;
 }
 
+/* Sorting Animation Styles */
+.grid.sorting {
+  position: relative;
+}
+
+.token-card-animated {
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+}
+
+/* Upvotes Sorting Animation */
+.token-card-animated.upvotes-sort {
+  animation: upvotesSortAnimation 0.9s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+@keyframes upvotesSortAnimation {
+  0% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  25% {
+    transform: scale(1.06) rotate(1deg);
+    opacity: 0.96;
+  }
+  50% {
+    transform: scale(0.98) rotate(-0.5deg);
+    opacity: 0.98;
+  }
+  75% {
+    transform: scale(1.02) rotate(0.2deg);
+    opacity: 0.99;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+
+/* Staggered animation delays - Only for first 3 tokens */
+.token-card-animated:nth-child(1) { animation-delay: 0ms; }
+.token-card-animated:nth-child(2) { animation-delay: 80ms; }
+.token-card-animated:nth-child(3) { animation-delay: 160ms; }
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .header {
