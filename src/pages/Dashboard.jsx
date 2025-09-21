@@ -40,6 +40,9 @@ const Dashboard = () => {
       } else if (sortBy === 'volume') {
         valueA = a.tokenPrice?.tradingUsd || a.tokenPrice?.dayTrading || 0;
         valueB = b.tokenPrice?.tradingUsd || b.tokenPrice?.dayTrading || 0;
+      } else if (sortBy === 'upvotes') {
+        valueA = getLikeCount(a.address) || 0;
+        valueB = getLikeCount(b.address) || 0;
       }
       
       return valueB - valueA; // Highest to lowest
@@ -101,6 +104,13 @@ const Dashboard = () => {
             onClick={() => handleSort('volume')}
           >
             Volume
+            <i className="fas fa-chevron-down chevron-icon"></i>
+          </button>
+          <button 
+            className={`sort-btn ${sortBy === 'upvotes' ? 'active' : ''}`}
+            onClick={() => handleSort('upvotes')}
+          >
+            Upvotes
             <i className="fas fa-chevron-down chevron-icon"></i>
           </button>
         </div>
