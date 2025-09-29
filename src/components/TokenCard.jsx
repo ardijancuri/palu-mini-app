@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { formatPrice, formatUsd, formatLiquidity } from '../utils/formatters';
 import UpvoteButton from './UpvoteButton';
+import paluPfpImage from '../assets/palu-pfp.png';
 
 const TokenCard = ({ 
   token, 
@@ -50,7 +51,7 @@ const TokenCard = ({
   // Custom image mapping for specific tokens
   const getTokenImage = (token) => {
     const customImages = {
-      '0xb75a7e8876df49a74cc4c76c6bda161a8ea4b483': '/src/assets/palu-pfp.png'
+      '0xb75a7e8876df49a74cc4c76c6bda161a8ea4b483': paluPfpImage
     };
     
     return customImages[token.address] || token.image || null;
