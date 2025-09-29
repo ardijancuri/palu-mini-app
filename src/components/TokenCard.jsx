@@ -47,7 +47,16 @@ const TokenCard = ({
     );
   }
 
-  const img = token.image || null;
+  // Custom image mapping for specific tokens
+  const getTokenImage = (token) => {
+    const customImages = {
+      '0xb75a7e8876df49a74cc4c76c6bda161a8ea4b483': '/src/assets/palu-pfp.png'
+    };
+    
+    return customImages[token.address] || token.image || null;
+  };
+  
+  const img = getTokenImage(token);
   const symbol = token.shortName || token.symbol || '';
   const name = token.name || symbol || '';
   const tp = token.tokenPrice || {};
