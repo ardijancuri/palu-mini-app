@@ -1,0 +1,116 @@
+/* PALU DEV Styles */
+.palu-dev {
+  background: #000000 !important;
+  color: white;
+  padding: 0;
+  position: relative;
+  overflow-x: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Override body background for PALU DEV page */
+body:has(.palu-dev) {
+  background: #000000 !important;
+}
+
+.palu-dev-content {
+  max-width: 1200px;
+  margin: 60px auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.palu-dev-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 600;
+  color: #F5C908;
+  text-shadow: 0 0 30px rgba(245, 201, 8, 0.3);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.palu-dev-subtitle {
+  font-size: clamp(1rem, 3vw, 1.6rem);
+  color: white;
+  margin: 0.2rem 0 0 0;
+  font-weight: 300;
+  letter-spacing: 0.5px;
+}
+
+.connect-telegram-btn {
+  background: linear-gradient(135deg, #0088cc, #0066aa);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 2rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 136, 204, 0.3);
+  letter-spacing: 0.5px;
+}
+
+.connect-telegram-btn:hover {
+  background: linear-gradient(135deg, #0066aa, #004488);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 136, 204, 0.4);
+}
+
+.connect-telegram-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(0, 136, 204, 0.3);
+}
+
+.palu-dev-image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.palu-dev-image {
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  border-radius: 15px;
+}
+
+/* Responsive Design for PALU DEV */
+@media (max-width: 768px) {
+  .palu-dev-content {
+    gap: 2rem;
+  }
+  
+  .palu-dev-image {
+    max-width: 300px;
+  }
+  
+  .connect-telegram-btn {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    margin-top: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .palu-dev-content {
+    gap: 1.5rem;
+  }
+  
+  .palu-dev-image {
+    max-width: 250px;
+  }
+  
+  .connect-telegram-btn {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+  }
+}

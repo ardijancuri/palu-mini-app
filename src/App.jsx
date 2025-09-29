@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import Community from './pages/Community';
 import TokenCommunity from './pages/TokenCommunity';
 import PaluTools from './pages/PaluTools';
+import PaluDev from './pages/PaluDev';
 import ContactUs from './pages/ContactUs';
 
 function App() {
@@ -15,10 +16,12 @@ function App() {
         <main>
           <Routes>
             <Route path="/" element={<WaitingRoom />} />
+            <Route path="/bnb-price" element={<WaitingRoom />} />
             <Route path="/1st-batch" element={<Dashboard />} />
             <Route path="/2nd-batch" element={<Community />} />
             <Route path="/community" element={<TokenCommunity />} />
             <Route path="/tools" element={<PaluTools />} />
+            <Route path="/palu-dev" element={<PaluDev />} />
             <Route path="/contact" element={<ContactUs />} />
           </Routes>
         </main>
